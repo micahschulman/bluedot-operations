@@ -1,0 +1,3570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BlueDot Ops Operations Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --panel: #ffffff;
+    --panel-alt: #f8fafc;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #0f172a;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+    --accent: #0f172a;
+    --danger: #dc2626;
+    --warn: #ea580c;
+    --caution: #ca8a04;
+    --ok: #059669;
+    --info: #2563eb;
+    --violet: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  html, body, #root { height: 100%; margin: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; }
+  input:focus, textarea:focus, select:focus { outline: none; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; background-clip: padding-box; border: 2px solid transparent; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+  .modal-overlay { animation: fadeIn 0.15s ease-out; }
+  .row-hover:hover { background-color: #f8fafc !important; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; border: 1px solid; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 7px; font-size: 12px; font-weight: 500; transition: all 0.1s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1e293b; }
+  .btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { background: var(--panel-alt); }
+  .btn-danger { background: transparent; border: 1px solid #fecaca; color: var(--danger); }
+  .btn-danger:hover { background: #fef2f2; }
+  .icon-btn { padding: 6px; border-radius: 6px; color: var(--text-2); display: inline-flex; }
+  .icon-btn:hover { background: var(--panel-alt); color: var(--text); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--text-2); cursor: pointer; transition: all 0.1s; }
+  .nav-item:hover { background: var(--panel-alt); color: var(--text); }
+  .nav-item.active { background: #eef2ff; color: #3730a3; font-weight: 500; }
+  .nav-item.active .nav-badge { background: #c7d2fe; color: #3730a3; }
+  .nav-badge { margin-left: auto; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; background: #f1f5f9; color: var(--text-3); min-width: 18px; text-align: center; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-3); }
+  .input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; color: var(--text); width: 100%; }
+  .input:focus { border-color: var(--accent); }
+  kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 2px 5px; background: rgba(255,255,255,0.15); border-radius: 3px;
+    color: #cbd5e1;
+  }
+</style>
+</head>
+<body>
+<div id="gate" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f172a 0%,#334155 100%);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Inter,-apple-system,sans-serif;">
+  <div style="background:#fff;border-radius:14px;padding:36px 40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0f172a 0%,#334155 100%);display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#0f172a;letter-spacing:-0.2px;">BlueDot Ops</div>
+        <div style="font-size:10px;color:#94a3b8;letter-spacing:0.5px;text-transform:uppercase;font-weight:500;">Operations Center</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#475569;line-height:1.55;margin-bottom:20px;margin-top:12px;">This workspace is password protected. Enter the access password to continue.</div>
+    <form id="gateForm" style="display:flex;flex-direction:column;gap:10px;">
+      <input id="gatePass" type="password" placeholder="Access password" autocomplete="off" autofocus
+        style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;color:#0f172a;font-family:inherit;outline:none;width:100%;" />
+      <div id="gateError" style="font-size:11.5px;color:#dc2626;min-height:16px;"></div>
+      <button type="submit" style="padding:10px 14px;background:#0f172a;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Unlock</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  const PASSWORD = 'bluedot';
+  const STORAGE_KEY = 'bluedot_gate_unlocked_v1';
+  const gate = document.getElementById('gate');
+  const form = document.getElementById('gateForm');
+  const input = document.getElementById('gatePass');
+  const err = document.getElementById('gateError');
+
+  // If previously unlocked this session, skip the gate
+  if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+    gate.remove();
+    return;
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (input.value.trim().toLowerCase() === PASSWORD) {
+      try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}
+      gate.style.transition = 'opacity 0.2s';
+      gate.style.opacity = '0';
+      setTimeout(() => gate.remove(), 200);
+    } else {
+      err.textContent = 'Incorrect password. Try again.';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+</script>
+
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#64748b;font-size:13px;">Loading BlueDot Ops...</div></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ============================================================
+// ICONS (lucide via global)
+// ============================================================
+const Icon = ({ name, size = 14, color, strokeWidth = 2, style = {} }) => {
+  const ref = useRef(null);
+  const [ready, setReady] = useState(!!window.lucide);
+
+  useEffect(() => {
+    if (!window.lucide) {
+      const interval = setInterval(() => {
+        if (window.lucide) { setReady(true); clearInterval(interval); }
+      }, 50);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ref.current && window.lucide && window.lucide.icons) {
+      ref.current.innerHTML = '';
+      const iconNode = window.lucide.icons[name];
+      if (!iconNode) return;
+      try {
+        const icon = window.lucide.createElement(iconNode);
+        icon.setAttribute('width', size);
+        icon.setAttribute('height', size);
+        icon.setAttribute('stroke-width', strokeWidth);
+        if (color) icon.setAttribute('stroke', color);
+        ref.current.appendChild(icon);
+      } catch (e) {}
+    }
+  }, [name, size, color, strokeWidth, ready]);
+  return <span ref={ref} style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, ...style }} />;
+};
+
+// ============================================================
+// CONSTANTS (mutable — can be customized via Settings)
+// ============================================================
+
+const DEFAULT_WORKSTREAMS = [
+  { id: 'people', label: 'People Ops', color: '#6366f1', icon: 'Users', description: 'Hiring, onboarding, payroll, benefits, culture, HR systems.' },
+  { id: 'compliance', label: 'Compliance', color: '#f59e0b', icon: 'ShieldCheck', description: 'US 501(c)(3) and UK CLG obligations, board governance, filings.' },
+  { id: 'finance', label: 'Finance', color: '#10b981', icon: 'DollarSign', description: 'Budgeting, internal financial tracking, accounting liaison, audits.' },
+  { id: 'office', label: 'Office', color: '#ec4899', icon: 'Building2', description: '1680 Mission St buildout, IT, AV, facilities, day-to-day operations.' },
+  { id: 'eir', label: 'EIR Program', color: '#8b5cf6', icon: 'Rocket', description: 'Mid-2026 launch: 10-20 entrepreneurs-in-residence. Visas, housing, workspace.' },
+  { id: 'visas', label: 'Visas', color: '#06b6d4', icon: 'Plane', description: 'Immigration for team and EIRs. L-1A, O-1, H-1B, J-1 pipelines.' },
+  { id: 'tooling', label: 'Tooling', color: '#64748b', icon: 'Wrench', description: 'Notion, Slack, Google Workspace, internal systems and data structure.' },
+];
+
+const STATUSES = [
+  { id: 'not_started', label: 'Not started', color: '#94a3b8' },
+  { id: 'in_progress', label: 'In progress', color: '#3b82f6' },
+  { id: 'blocked', label: 'Blocked', color: '#dc2626' },
+  { id: 'done', label: 'Done', color: '#10b981' },
+];
+
+const PRIORITIES = [
+  { id: 'p0', label: 'P0', color: '#dc2626', weight: 8 },
+  { id: 'p1', label: 'P1', color: '#ea580c', weight: 6 },
+  { id: 'p2', label: 'P2', color: '#ca8a04', weight: 4 },
+  { id: 'p3', label: 'P3', color: '#64748b', weight: 2 },
+];
+
+const DEFAULT_RESOURCE_TYPES = [
+  { id: 'budget', label: 'Budget', icon: 'DollarSign' },
+  { id: 'vendor', label: 'Vendor selection', icon: 'Store' },
+  { id: 'counsel', label: 'Legal counsel', icon: 'Scale' },
+  { id: 'time', label: 'Internal time', icon: 'Clock' },
+  { id: 'hire', label: 'New hire', icon: 'UserPlus' },
+  { id: 'decision', label: 'CEO decision', icon: 'MessageSquare' },
+  { id: 'coordination', label: 'Team coordination', icon: 'Users' },
+];
+
+const DEFAULT_TIMEFRAMES = [
+  { id: '2h', label: '2 hours', days: 0.25 },
+  { id: '1d', label: '1 day', days: 1 },
+  { id: '3d', label: '3 days', days: 3 },
+  { id: '1w', label: '1 week', days: 7 },
+  { id: '2w', label: '2 weeks', days: 14 },
+  { id: '1mo', label: '1 month', days: 30 },
+  { id: '2mo', label: '2 months', days: 60 },
+  { id: '3mo', label: '3 months', days: 90 },
+];
+
+const DEFAULT_PEOPLE = [
+  { id: 'head_ops', name: 'Head of Operations', role: 'Operations lead', workstreams: ['people', 'compliance', 'finance', 'office', 'eir', 'visas', 'tooling'] },
+  { id: 'ceo', name: 'CEO', role: 'Chief Executive', workstreams: ['eir', 'finance', 'compliance'] },
+  { id: 'ops_assoc', name: 'Ops Associate', role: 'Operations Associate (open role)', workstreams: ['people', 'office', 'tooling'] },
+];
+
+// Live, mutable versions (loaded from localStorage, updated via Settings)
+const STORAGE_KEY_WS = 'bluedot_workstreams_v1';
+const STORAGE_KEY_RT = 'bluedot_resource_types_v1';
+const STORAGE_KEY_TF = 'bluedot_timeframes_v1';
+const STORAGE_KEY_PEOPLE = 'bluedot_people_v1';
+
+let WORKSTREAMS = (() => {
+  try { const v = localStorage.getItem(STORAGE_KEY_WS); if (v) return JSON.parse(v); } catch (e) {}
+  return DEFAULT_WORKSTREAMS;
+})();
+let RESOURCE_TYPES = (() => {
+  try { const v = localStorage.getItem(STORAGE_KEY_RT); if (v) return JSON.parse(v); } catch (e) {}
+  return DEFAULT_RESOURCE_TYPES;
+})();
+let TIMEFRAMES = (() => {
+  try { const v = localStorage.getItem(STORAGE_KEY_TF); if (v) return JSON.parse(v); } catch (e) {}
+  return DEFAULT_TIMEFRAMES;
+})();
+let PEOPLE = (() => {
+  try { const v = localStorage.getItem(STORAGE_KEY_PEOPLE); if (v) return JSON.parse(v); } catch (e) {}
+  return DEFAULT_PEOPLE;
+})();
+
+const persistWS = (v) => { WORKSTREAMS = v; try { localStorage.setItem(STORAGE_KEY_WS, JSON.stringify(v)); } catch (e) {} };
+const persistRT = (v) => { RESOURCE_TYPES = v; try { localStorage.setItem(STORAGE_KEY_RT, JSON.stringify(v)); } catch (e) {} };
+const persistTF = (v) => { TIMEFRAMES = v; try { localStorage.setItem(STORAGE_KEY_TF, JSON.stringify(v)); } catch (e) {} };
+const persistPeople = (v) => { PEOPLE = v; try { localStorage.setItem(STORAGE_KEY_PEOPLE, JSON.stringify(v)); } catch (e) {} };
+
+const LINK_TYPES = {
+  gdrive: { label: 'Google Drive', color: '#fbbf24', icon: 'FileText' },
+  notion: { label: 'Notion', color: '#374151', icon: 'BookOpen' },
+  slack: { label: 'Slack', color: '#7c3aed', icon: 'Hash' },
+  sheet: { label: 'Sheet', color: '#10b981', icon: 'Table' },
+  doc: { label: 'Doc', color: '#3b82f6', icon: 'FileText' },
+  external: { label: 'External', color: '#64748b', icon: 'ExternalLink' },
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function daysFromNow(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysBetween(dateStr) {
+  const target = new Date(dateStr);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  target.setHours(0, 0, 0, 0);
+  return Math.round((target - now) / (1000 * 60 * 60 * 24));
+}
+
+function riskLevel(item) {
+  if (item.status === 'done') return 'done';
+  if (item.status === 'blocked') return 'blocked';
+  const days = daysBetween(item.deadline);
+  if (days < 0) return 'overdue';
+  if (days <= 7) return 'critical';
+  if (days <= 21) return 'warning';
+  return 'ok';
+}
+
+function formatDeadline(dateStr) {
+  const days = daysBetween(dateStr);
+  if (days < 0) return `${Math.abs(days)}d late`;
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days <= 30) return `${days}d`;
+  const weeks = Math.round(days / 7);
+  if (weeks <= 12) return `${weeks}w`;
+  const months = Math.round(days / 30);
+  return `${months}mo`;
+}
+
+function formatDateShort(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function get(id, list) { return list.find(x => x.id === id); }
+
+// Criticality score (1-10). Transparent formula:
+// base = priority weight (p0=8, p1=6, p2=4, p3=2)
+// + urgency modifier (overdue +3, <=7d +2, <=21d +1)
+// + stall modifier (blocked +1)
+// - done penalty (done = 0)
+// Manual override via item.criticality_override wins.
+function criticalityScore(item) {
+  if (item.status === 'done') return 0;
+  if (typeof item.criticality_override === 'number') return Math.max(1, Math.min(10, item.criticality_override));
+  const prio = get(item.priority, PRIORITIES);
+  let score = prio?.weight || 2;
+  const days = daysBetween(item.deadline);
+  if (days < 0) score += 3;
+  else if (days <= 7) score += 2;
+  else if (days <= 21) score += 1;
+  if (item.status === 'blocked') score += 1;
+  return Math.min(10, Math.max(1, score));
+}
+
+function criticalityBreakdown(item) {
+  if (item.status === 'done') return { total: 0, parts: [{ label: 'Done', value: 0 }] };
+  const prio = get(item.priority, PRIORITIES);
+  const parts = [];
+  parts.push({ label: `Priority ${prio?.label}`, value: prio?.weight || 2 });
+  const days = daysBetween(item.deadline);
+  if (days < 0) parts.push({ label: 'Overdue', value: 3 });
+  else if (days <= 7) parts.push({ label: 'Due ≤7d', value: 2 });
+  else if (days <= 21) parts.push({ label: 'Due ≤21d', value: 1 });
+  if (item.status === 'blocked') parts.push({ label: 'Blocked', value: 1 });
+  const total = Math.min(10, parts.reduce((s, p) => s + p.value, 0));
+  return { total, parts };
+}
+
+// ============================================================
+// SEED DATA
+// ============================================================
+
+const now = Date.now();
+
+const SEED_EVENTS = [
+  { id: 'e_1', item_id: 'i_1', timestamp: now - 86400000 * 2, actor: 'head_ops', event_type: 'created', from: null, to: 'Item created' },
+  { id: 'e_2', item_id: 'i_2', timestamp: now - 86400000 * 3, actor: 'head_ops', event_type: 'created', from: null, to: 'Item created' },
+  { id: 'e_3', item_id: 'i_3', timestamp: now - 86400000 * 1, actor: 'head_ops', event_type: 'status_changed', from: 'not_started', to: 'in_progress' },
+  { id: 'e_4', item_id: 'i_4', timestamp: now - 86400000 * 4, actor: 'ceo', event_type: 'note_added', from: null, to: 'Flagged in CEO 1:1' },
+];
+
+const SEED_ITEMS = [
+  {
+    id: 'i_1', parent_id: null,
+    title: 'File L-1A visa for UK team member',
+    workstream: 'visas', owner: 'head_ops', vendor: 'Alcorn Immigration Law',
+    deadline: daysFromNow(56), status: 'in_progress', priority: 'p0',
+    resource: 'counsel', timeframe: '2w',
+    notes: 'Hard deadline: 8 weeks. Counsel shortlisted: Alcorn, Beyond Border, LegalOS. Alcorn confirmed availability. Gathering supporting docs this week.',
+    links: [
+      { type: 'gdrive', label: 'L-1A Petition Letter Draft', url: '#' },
+      { type: 'gdrive', label: 'Org Chart & Qualifying Relationship Evidence', url: '#' },
+      { type: 'notion', label: 'Immigration Counsel Shortlist', url: '#' },
+    ],
+    tags: ['hard_deadline', 'external_dep'],
+    created_at: now - 86400000 * 2,
+  },
+  {
+    id: 'i_1a', parent_id: 'i_1',
+    title: 'Finalize counsel engagement letter',
+    workstream: 'visas', owner: 'head_ops', vendor: 'Alcorn Immigration Law',
+    deadline: daysFromNow(7), status: 'in_progress', priority: 'p0',
+    resource: 'counsel', timeframe: '3d',
+    notes: 'Engagement letter received, reviewing terms.',
+    links: [{ type: 'doc', label: 'Alcorn Engagement Letter', url: '#' }],
+    tags: [], created_at: now - 86400000 * 1,
+  },
+  {
+    id: 'i_1b', parent_id: 'i_1',
+    title: 'Gather UK entity supporting documents',
+    workstream: 'visas', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(14), status: 'not_started', priority: 'p0',
+    resource: 'coordination', timeframe: '1w',
+    notes: 'Org chart, UK payroll records, Companies House filings.',
+    links: [], tags: [], created_at: now - 86400000 * 1,
+  },
+  {
+    id: 'i_1c', parent_id: 'i_1',
+    title: 'Draft and review petition letter',
+    workstream: 'visas', owner: 'head_ops', vendor: 'Alcorn Immigration Law',
+    deadline: daysFromNow(35), status: 'not_started', priority: 'p0',
+    resource: 'counsel', timeframe: '1w',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 1,
+  },
+
+  {
+    id: 'i_2', parent_id: null,
+    title: 'Remediate 401(k) employer contribution errors',
+    workstream: 'finance', owner: 'head_ops', vendor: 'Guideline',
+    deadline: daysFromNow(21), status: 'not_started', priority: 'p0',
+    resource: 'coordination', timeframe: '2w',
+    notes: 'Errors identified in recent contributions. Need scope assessment, historical audit, and corrective contributions. Fiduciary exposure if not resolved promptly.',
+    links: [
+      { type: 'sheet', label: '401(k) Contribution Audit - Q1 2026', url: '#' },
+      { type: 'gdrive', label: 'Guideline Plan Documents', url: '#' },
+    ],
+    tags: ['fiduciary', 'compliance'],
+    created_at: now - 86400000 * 3,
+  },
+  {
+    id: 'i_2a', parent_id: 'i_2',
+    title: 'Audit last 6 months of employer contributions',
+    workstream: 'finance', owner: 'head_ops', vendor: 'Guideline',
+    deadline: daysFromNow(10), status: 'not_started', priority: 'p0',
+    resource: 'time', timeframe: '3d',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 3,
+  },
+  {
+    id: 'i_2b', parent_id: 'i_2',
+    title: 'Process corrective contributions + earnings',
+    workstream: 'finance', owner: 'head_ops', vendor: 'Guideline',
+    deadline: daysFromNow(21), status: 'not_started', priority: 'p0',
+    resource: 'coordination', timeframe: '1w',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 3,
+  },
+
+  {
+    id: 'i_3', parent_id: null,
+    title: 'Build formal onboarding system for 3 incoming hires',
+    workstream: 'people', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(42), status: 'in_progress', priority: 'p0',
+    resource: 'time', timeframe: '2w',
+    notes: '3 new hires in next 6 weeks. Need laptop procurement, account provisioning, week-1 plan, buddy system, and benefits enrollment flow.',
+    links: [
+      { type: 'notion', label: 'Onboarding Playbook (v0.1)', url: '#' },
+      { type: 'sheet', label: 'New Hire Checklist Template', url: '#' },
+      { type: 'doc', label: 'Equipment Procurement SOP', url: '#' },
+    ],
+    tags: ['people', 'repeatable'],
+    created_at: now - 86400000 * 1,
+  },
+  {
+    id: 'i_3a', parent_id: 'i_3',
+    title: 'Procure laptops and peripherals for 3 hires',
+    workstream: 'people', owner: 'head_ops', vendor: 'Apple Business',
+    deadline: daysFromNow(21), status: 'not_started', priority: 'p1',
+    resource: 'budget', timeframe: '3d',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 1,
+  },
+  {
+    id: 'i_3b', parent_id: 'i_3',
+    title: 'Standardize account provisioning (Google, Slack, Notion, 1Password)',
+    workstream: 'people', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(28), status: 'not_started', priority: 'p1',
+    resource: 'time', timeframe: '3d',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 1,
+  },
+  {
+    id: 'i_3c', parent_id: 'i_3',
+    title: 'Draft week-1 onboarding curriculum',
+    workstream: 'people', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(35), status: 'not_started', priority: 'p1',
+    resource: 'time', timeframe: '1w',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 1,
+  },
+
+  {
+    id: 'i_4', parent_id: null,
+    title: 'Audit and fix payroll process errors',
+    workstream: 'finance', owner: 'head_ops', vendor: 'Gusto',
+    deadline: daysFromNow(14), status: 'in_progress', priority: 'p0',
+    resource: 'coordination', timeframe: '1w',
+    notes: 'Errors flagged in recent pay runs. Root cause unclear. Implement verification step before each run. CEO flagged this as top priority in 1:1.',
+    links: [
+      { type: 'gdrive', label: 'Payroll Error Log - Q1', url: '#' },
+      { type: 'slack', label: '#ops-payroll channel', url: '#' },
+    ],
+    tags: ['ceo_flagged', 'urgent'],
+    created_at: now - 86400000 * 4,
+  },
+
+  {
+    id: 'i_5', parent_id: null,
+    title: 'Furnish and equip 1680 Mission St office',
+    workstream: 'office', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(45), status: 'not_started', priority: 'p1',
+    resource: 'vendor', timeframe: '1mo',
+    notes: '5,000 sqft. Need desks, chairs, meeting rooms, kitchen. Vendor selection is the gating item. Budget approval from CEO pending.',
+    links: [
+      { type: 'sheet', label: 'Office Furniture Vendor Comparison', url: '#' },
+      { type: 'notion', label: 'Office Buildout Plan', url: '#' },
+      { type: 'gdrive', label: 'Floor Plan - 1680 Mission', url: '#' },
+    ],
+    tags: ['capex'],
+    created_at: now - 86400000 * 2,
+  },
+  {
+    id: 'i_5a', parent_id: 'i_5',
+    title: 'Select furniture vendor (3-way bid)',
+    workstream: 'office', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(14), status: 'not_started', priority: 'p1',
+    resource: 'vendor', timeframe: '1w',
+    notes: '', links: [], tags: [], created_at: now - 86400000 * 2,
+  },
+  {
+    id: 'i_5b', parent_id: 'i_5',
+    title: 'Secure CEO approval on office budget',
+    workstream: 'office', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(10), status: 'blocked', priority: 'p1',
+    resource: 'decision', timeframe: '2h',
+    notes: 'Awaiting CEO response to budget proposal sent last week.',
+    links: [{ type: 'doc', label: 'Office Budget Proposal', url: '#' }],
+    tags: ['blocked_on_ceo'], created_at: now - 86400000 * 2,
+  },
+
+  {
+    id: 'i_6', parent_id: null,
+    title: 'Install internet and network infrastructure',
+    workstream: 'office', owner: 'head_ops', vendor: 'Monkeybrains ISP',
+    deadline: daysFromNow(30), status: 'in_progress', priority: 'p1',
+    resource: 'vendor', timeframe: '2w',
+    notes: 'Business fiber via Monkeybrains. Scheduling install. Conference room AV separate RFP.',
+    links: [{ type: 'doc', label: 'Monkeybrains Quote', url: '#' }],
+    tags: [], created_at: now - 86400000 * 5,
+  },
+
+  {
+    id: 'i_7', parent_id: null,
+    title: 'Build centralized compliance calendar (US + UK)',
+    workstream: 'compliance', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(60), status: 'not_started', priority: 'p1',
+    resource: 'time', timeframe: '2w',
+    notes: '501(c)(3) Form 990, CA state filings, UK CLG annual return, Companies House confirmation statement, board minute retention. No centralized view today.',
+    links: [
+      { type: 'notion', label: 'Compliance Calendar (skeleton)', url: '#' },
+      { type: 'sheet', label: 'US Filing Deadlines', url: '#' },
+      { type: 'sheet', label: 'UK Filing Deadlines', url: '#' },
+    ],
+    tags: ['dual_entity'],
+    created_at: now - 86400000 * 2,
+  },
+
+  {
+    id: 'i_8', parent_id: null,
+    title: 'Scope EIR program operational requirements',
+    workstream: 'eir', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(30), status: 'in_progress', priority: 'p1',
+    resource: 'time', timeframe: '2w',
+    notes: '10-20 EIRs starting mid-2026. Need to define: visa pathway per profile, housing model, workspace allocation, stipend structure, legal entity relationship, IP terms.',
+    links: [
+      { type: 'notion', label: 'EIR Program Operational Brief', url: '#' },
+      { type: 'gdrive', label: 'EIR Benchmarking (YC, SPC, Entrepreneur First)', url: '#' },
+    ],
+    tags: ['strategic', 'q3_launch'],
+    created_at: now - 86400000 * 6,
+  },
+  {
+    id: 'i_9', parent_id: null,
+    title: 'Establish EIR visa pipeline with immigration counsel',
+    workstream: 'eir', owner: 'head_ops', vendor: 'Alcorn Immigration Law',
+    deadline: daysFromNow(75), status: 'not_started', priority: 'p1',
+    resource: 'counsel', timeframe: '1mo',
+    notes: 'Most EIRs will need O-1 or H-1B. Some J-1 eligible. Bulk retainer agreement with counsel needed before launch.',
+    links: [], tags: ['strategic'], created_at: now - 86400000 * 2,
+  },
+  {
+    id: 'i_10', parent_id: null,
+    title: 'Source EIR housing partners (tiered model)',
+    workstream: 'eir', owner: 'ops_assoc', vendor: null,
+    deadline: daysFromNow(90), status: 'not_started', priority: 'p2',
+    resource: 'hire', timeframe: '1mo',
+    notes: 'Blueground and Landing for short-term corporate housing; direct corporate leases for longer stays. Blocked on Ops Associate hire.',
+    links: [{ type: 'notion', label: 'EIR Housing Model Draft', url: '#' }],
+    tags: ['blocked_on_hire'], created_at: now - 86400000 * 2,
+  },
+
+  {
+    id: 'i_11', parent_id: null,
+    title: 'Standardize Notion workspace structure',
+    workstream: 'tooling', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(60), status: 'not_started', priority: 'p2',
+    resource: 'time', timeframe: '2w',
+    notes: 'Scattered spreadsheets need migration. Templates, permissions model, workspace hierarchy. Do this after onboarding system is built (reuse templates).',
+    links: [], tags: [], created_at: now - 86400000 * 3,
+  },
+
+  {
+    id: 'i_12', parent_id: null,
+    title: 'Set up internal financial tracking + budgeting',
+    workstream: 'finance', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(45), status: 'not_started', priority: 'p2',
+    resource: 'vendor', timeframe: '2w',
+    notes: 'Evaluate Ramp vs Brex vs keeping spreadsheets + external accountants. Define monthly close process. Runway tracking for the board.',
+    links: [{ type: 'sheet', label: 'Ramp vs Brex Comparison', url: '#' }],
+    tags: [], created_at: now - 86400000 * 3,
+  },
+
+  {
+    id: 'i_13', parent_id: null,
+    title: 'Hire Ops Associate (Strategic Projects Associate)',
+    workstream: 'people', owner: 'head_ops', vendor: null,
+    deadline: daysFromNow(60), status: 'in_progress', priority: 'p1',
+    resource: 'hire', timeframe: '1mo',
+    notes: 'Identified as highest-leverage early hire. Posting live. Sourcing from Ashby. Using Who Method interview loop.',
+    links: [
+      { type: 'notion', label: 'Ops Associate JD', url: '#' },
+      { type: 'external', label: 'Ashby Job Post', url: '#' },
+      { type: 'doc', label: 'Who Method Scorecard', url: '#' },
+    ],
+    tags: ['force_multiplier'],
+    created_at: now - 86400000 * 10,
+  },
+
+  {
+    id: 'i_14', parent_id: null,
+    title: 'Draft board governance calendar and minute-keeping process',
+    workstream: 'compliance', owner: 'ceo', vendor: null,
+    deadline: daysFromNow(45), status: 'not_started', priority: 'p2',
+    resource: 'decision', timeframe: '1w',
+    notes: 'Quarterly board meetings, minutes template, resolution tracking, committee charters. CEO-owned; Ops supports.',
+    links: [], tags: [], created_at: now - 86400000 * 4,
+  },
+];
+
+// ============================================================
+// STORAGE
+// ============================================================
+
+const STORAGE_KEY_ITEMS = 'bluedot_ops_items_v3';
+const STORAGE_KEY_EVENTS = 'bluedot_ops_events_v3';
+const STORAGE_KEY_API = 'bluedot_ops_api_key';
+
+function loadFromStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return fallback;
+}
+
+function saveToStorage(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+
+function App() {
+  const [items, setItems] = useState(() => loadFromStorage(STORAGE_KEY_ITEMS, SEED_ITEMS));
+  const [events, setEvents] = useState(() => loadFromStorage(STORAGE_KEY_EVENTS, SEED_EVENTS));
+  const [view, setView] = useState('overview'); // overview | all | ws_<id> | people | data | settings
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addParentId, setAddParentId] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const bumpRefresh = () => setRefreshKey(k => k + 1);
+
+  useEffect(() => { saveToStorage(STORAGE_KEY_ITEMS, items); }, [items]);
+  useEffect(() => { saveToStorage(STORAGE_KEY_EVENTS, events); }, [events]);
+
+  const logEvent = (item_id, event_type, from, to, actor = 'head_ops') => {
+    const ev = { id: `e_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, item_id, timestamp: Date.now(), actor, event_type, from, to };
+    setEvents(prev => [ev, ...prev]);
+  };
+
+  const updateItem = (id, updates) => {
+    setItems(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      Object.keys(updates).forEach(key => {
+        if (item[key] !== updates[key]) {
+          const event_type = key === 'status' ? 'status_changed' : key === 'owner' ? 'owner_changed' : key === 'deadline' ? 'deadline_changed' : 'updated';
+          logEvent(id, event_type, item[key], updates[key]);
+        }
+      });
+      return { ...item, ...updates };
+    }));
+    if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({ ...prev, ...updates }));
+  };
+
+  const deleteItem = (id) => {
+    const descendants = items.filter(i => i.parent_id === id).map(i => i.id);
+    const toDelete = new Set([id, ...descendants]);
+    setItems(prev => prev.filter(i => !toDelete.has(i.id)));
+    logEvent(id, 'deleted', null, 'Item deleted');
+    if (selectedItem && selectedItem.id === id) setSelectedItem(null);
+  };
+
+  const addItem = (itemData) => {
+    const newItem = {
+      ...itemData,
+      id: `i_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      created_at: Date.now(),
+      links: itemData.links || [],
+      tags: itemData.tags || [],
+    };
+    setItems(prev => [newItem, ...prev]);
+    logEvent(newItem.id, 'created', null, 'Item created');
+  };
+
+  const addItemsBulk = (itemsData) => {
+    const now = Date.now();
+    const newItems = itemsData.map((d, idx) => ({
+      ...d,
+      id: `i_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+      created_at: now,
+      links: d.links || [],
+      tags: d.tags || [],
+    }));
+    setItems(prev => [...newItems, ...prev]);
+    newItems.forEach(i => logEvent(i.id, 'created', null, 'Item created via intake'));
+  };
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <Sidebar
+        view={view}
+        setView={setView}
+        items={items}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+      <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)' }}>
+        <TopBar
+          view={view}
+          onAsk={() => setChatOpen(true)}
+          onAdd={() => { setAddParentId(null); setAddOpen(true); }}
+        />
+        <div style={{ padding: '0 24px 40px' }}>
+          {view === 'overview' && (
+            <OverviewPage items={items} events={events} onItemClick={setSelectedItem} onNav={setView} />
+          )}
+          {view === 'insights' && (
+            <InsightsPage items={items} events={events} onItemClick={setSelectedItem} />
+          )}
+          {view === 'all' && (
+            <AllItemsPage items={items} onItemClick={setSelectedItem} onAddSubtask={(parentId) => { setAddParentId(parentId); setAddOpen(true); }} updateItem={updateItem} />
+          )}
+          {view.startsWith('ws_') && (
+            <WorkstreamPage
+              workstreamId={view.slice(3)}
+              items={items}
+              events={events}
+              onItemClick={setSelectedItem}
+              onAddSubtask={(parentId) => { setAddParentId(parentId); setAddOpen(true); }}
+              updateItem={updateItem}
+            />
+          )}
+          {view === 'people' && (
+            <PeoplePage items={items} events={events} onItemClick={setSelectedItem} />
+          )}
+          {view === 'data' && (
+            <ToolsAndIntakePage items={items} onAddItems={addItemsBulk} />
+          )}
+        </div>
+      </main>
+
+      {selectedItem && (
+        <ItemDetailModal
+          item={selectedItem}
+          allItems={items}
+          events={events}
+          onClose={() => setSelectedItem(null)}
+          onUpdate={(updates) => updateItem(selectedItem.id, updates)}
+          onDelete={() => deleteItem(selectedItem.id)}
+          onOpenItem={(it) => setSelectedItem(it)}
+          onAddSubtask={() => { setAddParentId(selectedItem.id); setAddOpen(true); }}
+        />
+      )}
+
+      {addOpen && (
+        <AddItemModal
+          parentId={addParentId}
+          allItems={items}
+          onClose={() => setAddOpen(false)}
+          onAdd={(data) => { addItem(data); setAddOpen(false); }}
+        />
+      )}
+
+      {chatOpen && (
+        <ChatPanel items={items} events={events} onClose={() => setChatOpen(false)} />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal onClose={() => setSettingsOpen(false)} onRefresh={bumpRefresh} />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+
+function Sidebar({ view, setView, items, onOpenSettings }) {
+  const openByWS = (wsId) => items.filter(i => i.workstream === wsId && i.status !== 'done').length;
+  const atRisk = items.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; }).length;
+
+  return (
+    <aside style={{ width: 240, borderRight: '1px solid var(--border)', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="Layers" size={15} color="#fff" strokeWidth={2.5} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: -0.2 }}>BlueDot Ops</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 500 }}>Operations Center</div>
+          </div>
+        </div>
+      </div>
+
+      <nav style={{ flex: 1, overflow: 'auto', padding: 10 }}>
+        <div style={{ padding: '6px 10px 4px' }}>
+          <div className="section-label">Dashboard</div>
+        </div>
+        <div
+          className={`nav-item ${view === 'overview' ? 'active' : ''}`}
+          onClick={() => setView('overview')}
+        >
+          <Icon name="LayoutDashboard" size={15} />
+          <span>Overview</span>
+          {atRisk > 0 && <span className="nav-badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>{atRisk}</span>}
+        </div>
+        <div
+          className={`nav-item ${view === 'insights' ? 'active' : ''}`}
+          onClick={() => setView('insights')}
+        >
+          <Icon name="TrendingUp" size={15} />
+          <span>Insights</span>
+        </div>
+        <div
+          className={`nav-item ${view === 'all' ? 'active' : ''}`}
+          onClick={() => setView('all')}
+        >
+          <Icon name="List" size={15} />
+          <span>All items</span>
+          <span className="nav-badge">{items.filter(i => i.status !== 'done').length}</span>
+        </div>
+
+        <div style={{ padding: '14px 10px 4px' }}>
+          <div className="section-label">Workstreams</div>
+        </div>
+        {WORKSTREAMS.map(ws => (
+          <div
+            key={ws.id}
+            className={`nav-item ${view === `ws_${ws.id}` ? 'active' : ''}`}
+            onClick={() => setView(`ws_${ws.id}`)}
+          >
+            <span className="dot" style={{ backgroundColor: ws.color, width: 9, height: 9 }} />
+            <span>{ws.label}</span>
+            <span className="nav-badge">{openByWS(ws.id)}</span>
+          </div>
+        ))}
+
+        <div style={{ padding: '14px 10px 4px' }}>
+          <div className="section-label">Resources</div>
+        </div>
+        <div
+          className={`nav-item ${view === 'people' ? 'active' : ''}`}
+          onClick={() => setView('people')}
+        >
+          <Icon name="Users" size={15} />
+          <span>People</span>
+          <span className="nav-badge">{PEOPLE.length}</span>
+        </div>
+        <div
+          className={`nav-item ${view === 'data' ? 'active' : ''}`}
+          onClick={() => setView('data')}
+        >
+          <Icon name="Zap" size={15} />
+          <span>Tools & Intake</span>
+        </div>
+      </nav>
+
+      <div style={{ padding: 10, borderTop: '1px solid var(--border)' }}>
+        <div
+          className="nav-item"
+          onClick={onOpenSettings}
+          style={{ fontSize: 12 }}
+        >
+          <Icon name="Settings" size={14} />
+          <span>Settings</span>
+        </div>
+        <div style={{ padding: '6px 10px', fontSize: 10, color: 'var(--text-3)', letterSpacing: 0.4 }}>
+          v0.3 • Data portable
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ============================================================
+// TOP BAR
+// ============================================================
+
+function TopBar({ view, onAsk, onAdd }) {
+  const title = useMemo(() => {
+    if (view === 'overview') return { main: 'Overview', sub: 'Operational state at a glance' };
+    if (view === 'insights') return { main: 'Insights', sub: 'Trends, blockers, and team health over time' };
+    if (view === 'all') return { main: 'All items', sub: 'Every tracked item including sub-tasks' };
+    if (view === 'people') return { main: 'People', sub: 'Team load and ownership' };
+    if (view === 'data') return { main: 'Tools & Intake', sub: 'Launch connected workspaces and create tasks from documents' };
+    if (view.startsWith('ws_')) {
+      const ws = get(view.slice(3), WORKSTREAMS);
+      return { main: ws?.label || 'Workstream', sub: ws?.description || '' };
+    }
+    return { main: '', sub: '' };
+  }, [view]);
+
+  return (
+    <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: -0.3 }}>{title.main}</div>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>{title.sub}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn btn-secondary" onClick={onAdd}>
+          <Icon name="Plus" size={13} />
+          <span>New item</span>
+        </button>
+        <button className="btn btn-primary" onClick={onAsk}>
+          <Icon name="Sparkles" size={13} />
+          <span>Ask the tracker</span>
+          <kbd>⌘K</kbd>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// OVERVIEW PAGE
+// ============================================================
+
+function OverviewPage({ items, events, onItemClick, onNav }) {
+  const open = items.filter(i => i.status !== 'done');
+  const atRisk = open.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; });
+  const doneThisWeek = items.filter(i => i.status === 'done' && (Date.now() - (i.created_at || 0)) < 7 * 86400000).length;
+  const inProgress = items.filter(i => i.status === 'in_progress').length;
+
+  const focusList = [...open]
+    .sort((a, b) => criticalityScore(b) - criticalityScore(a))
+    .slice(0, 6);
+
+  return (
+    <div>
+      {/* HEADLINE STATS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 14 }}>
+        <HeadlineStat label="Open items" value={open.length} sub={`${items.length} total`} />
+        <HeadlineStat label="At risk" value={atRisk.length} sub="Overdue, critical, blocked" tone="danger" />
+        <HeadlineStat label="In progress" value={inProgress} tone="info" />
+        <HeadlineStat label="Blocked" value={items.filter(i => i.status === 'blocked').length} tone="danger" />
+        <HeadlineStat label="Done / 7d" value={doneThisWeek} tone="success" />
+      </div>
+
+      {/* TOP ROW: Focus + Calendar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+        <FocusPanel items={focusList} onItemClick={onItemClick} />
+        <CalendarPanel items={open} onItemClick={onItemClick} />
+      </div>
+
+      {/* MIDDLE ROW: At risk + Workstream health */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 14, marginBottom: 14 }}>
+        <AtRiskPanel items={atRisk} onItemClick={onItemClick} />
+        <WorkstreamHealthPanel items={items} onNav={onNav} />
+      </div>
+
+      {/* BOTTOM ROW: Ownership + Recent activity */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 14 }}>
+        <OwnershipPanel items={items} />
+        <ActivityPanel events={events.slice(0, 8)} items={items} onItemClick={onItemClick} />
+      </div>
+    </div>
+  );
+}
+
+function HeadlineStat({ label, value, sub, tone = 'neutral' }) {
+  const tones = {
+    neutral: { color: 'var(--text)', bg: 'var(--panel)' },
+    danger: { color: 'var(--danger)', bg: '#fef2f2' },
+    info: { color: 'var(--info)', bg: '#eff6ff' },
+    success: { color: 'var(--ok)', bg: '#ecfdf5' },
+  };
+  const t = tones[tone];
+  return (
+    <div className="card" style={{ padding: '12px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 500 }}>{label}</div>
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: -0.5, color: t.color, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 4 }}>{sub}</div>}
+    </div>
+  );
+}
+
+// Focus panel: where to dedicate resources next
+function FocusPanel({ items, onItemClick }) {
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="Target" size={14} color="var(--violet)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>Where to dedicate resources next</div>
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>Ranked by criticality</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {items.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>All clear.</div>}
+        {items.map((item, idx) => {
+          const score = criticalityScore(item);
+          const ws = get(item.workstream, WORKSTREAMS);
+          const resource = get(item.resource, RESOURCE_TYPES);
+          const tf = get(item.timeframe, TIMEFRAMES);
+          const risk = riskLevel(item);
+          const riskColors = { overdue: '#dc2626', critical: '#ea580c', blocked: '#dc2626', warning: '#ca8a04', ok: '#64748b' };
+          return (
+            <div
+              key={item.id}
+              className="row-hover"
+              onClick={() => onItemClick(item)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 8px', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--border)' }}
+            >
+              <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{idx + 1}</div>
+              <ScoreBadge score={score} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
+                  <span style={{ fontSize: 10, color: ws.color, display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <span className="dot" style={{ backgroundColor: ws.color }} />{ws.label}
+                  </span>
+                  {resource && <span style={{ fontSize: 10, color: 'var(--text-2)' }}>• {resource.label}</span>}
+                  {tf && <span style={{ fontSize: 10, color: 'var(--text-2)' }}>• ~{tf.label}</span>}
+                </div>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: riskColors[risk], minWidth: 52, textAlign: 'right' }} className="mono">
+                {formatDeadline(item.deadline)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ScoreBadge({ score }) {
+  const color = score >= 9 ? '#dc2626' : score >= 7 ? '#ea580c' : score >= 5 ? '#ca8a04' : '#64748b';
+  const bg = score >= 9 ? '#fef2f2' : score >= 7 ? '#fff7ed' : score >= 5 ? '#fefce8' : '#f1f5f9';
+  return (
+    <div title={`Criticality score: ${score}/10`} style={{ width: 32, height: 24, borderRadius: 5, background: bg, color, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${color}22` }} className="mono">
+      {score}
+    </div>
+  );
+}
+
+function CalendarPanel({ items, onItemClick }) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  const itemsByDate = {};
+  items.forEach(item => {
+    const key = item.deadline;
+    if (!itemsByDate[key]) itemsByDate[key] = [];
+    itemsByDate[key].push(item);
+  });
+
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="Calendar" size={14} color="var(--info)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>Next 28 days</div>
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>Deadline density</div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 8 }}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-3)', fontWeight: 500 }}>{d}</div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+        {/* Pad start to align weekday */}
+        {Array.from({ length: today.getDay() }, (_, i) => <div key={`pad_${i}`} />)}
+        {days.map((d, i) => {
+          const key = d.toISOString().slice(0, 10);
+          const dayItems = itemsByDate[key] || [];
+          const isToday = i === 0;
+          const maxCrit = dayItems.reduce((m, it) => Math.max(m, criticalityScore(it)), 0);
+          const bgIntensity = maxCrit >= 9 ? '#dc2626' : maxCrit >= 7 ? '#ea580c' : maxCrit >= 5 ? '#ca8a04' : maxCrit > 0 ? '#94a3b8' : 'transparent';
+          const hasItems = dayItems.length > 0;
+          return (
+            <div
+              key={key}
+              title={hasItems ? `${dayItems.length} item(s) due: ${dayItems.map(i => i.title).join(', ')}` : ''}
+              onClick={() => hasItems && onItemClick(dayItems[0])}
+              style={{
+                aspectRatio: '1', borderRadius: 5, position: 'relative',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: hasItems ? bgIntensity : '#f8fafc',
+                color: hasItems ? '#fff' : (isToday ? 'var(--text)' : 'var(--text-3)'),
+                border: isToday ? '1.5px solid var(--text)' : '1px solid var(--border)',
+                fontSize: 10, fontWeight: isToday ? 700 : 500, cursor: hasItems ? 'pointer' : 'default',
+              }}
+            >
+              {d.getDate()}
+              {dayItems.length > 1 && (
+                <span style={{ position: 'absolute', top: 1, right: 2, fontSize: 8, fontWeight: 700 }}>{dayItems.length}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 12, fontSize: 10, color: 'var(--text-2)', alignItems: 'center' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span className="dot" style={{ backgroundColor: '#dc2626', width: 8, height: 8 }} />Critical</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span className="dot" style={{ backgroundColor: '#ea580c', width: 8, height: 8 }} />High</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span className="dot" style={{ backgroundColor: '#ca8a04', width: 8, height: 8 }} />Medium</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span className="dot" style={{ backgroundColor: '#94a3b8', width: 8, height: 8 }} />Low</span>
+      </div>
+    </div>
+  );
+}
+
+function AtRiskPanel({ items, onItemClick }) {
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="AlertCircle" size={14} color="var(--danger)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>At risk</div>
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{items.length} items</div>
+      </div>
+      {items.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>Nothing at risk. Nice.</div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {items.slice(0, 7).map(item => {
+          const ws = get(item.workstream, WORKSTREAMS);
+          const owner = get(item.owner, PEOPLE);
+          const risk = riskLevel(item);
+          const status = get(item.status, STATUSES);
+          return (
+            <div
+              key={item.id}
+              className="row-hover"
+              onClick={() => onItemClick(item)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', borderRadius: 5, cursor: 'pointer', fontSize: 12 }}
+            >
+              <div style={{ width: 3, height: 20, borderRadius: 2, background: risk === 'overdue' ? '#dc2626' : risk === 'blocked' ? '#dc2626' : '#ea580c' }} />
+              <span className="dot" style={{ backgroundColor: ws.color }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{item.title}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{owner?.name || item.owner}</div>
+              </div>
+              <span className="chip" style={{ color: status.color, borderColor: `${status.color}33`, backgroundColor: `${status.color}11`, fontSize: 10 }}>{status.label}</span>
+              <span className="mono" style={{ fontSize: 11, fontWeight: 600, color: risk === 'overdue' || risk === 'blocked' ? '#dc2626' : '#ea580c', minWidth: 50, textAlign: 'right' }}>{formatDeadline(item.deadline)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WorkstreamHealthPanel({ items, onNav }) {
+  const health = WORKSTREAMS.map(ws => {
+    const wsItems = items.filter(i => i.workstream === ws.id);
+    const open = wsItems.filter(i => i.status !== 'done');
+    const atRisk = open.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; }).length;
+    const inProg = open.filter(i => i.status === 'in_progress').length;
+    const total = wsItems.length;
+    const done = total - open.length;
+    const pct = total > 0 ? (done / total) * 100 : 0;
+    return { ws, open: open.length, atRisk, inProg, pct, total };
+  });
+
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="Activity" size={14} color="var(--ok)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>Workstream health</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {health.map(({ ws, open, atRisk, inProg, pct, total }) => (
+          <div key={ws.id} className="row-hover" onClick={() => onNav(`ws_${ws.id}`)} style={{ padding: '6px 4px', borderRadius: 5, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+              <span className="dot" style={{ backgroundColor: ws.color }} />
+              <span style={{ fontSize: 12, fontWeight: 500, flex: 1 }}>{ws.label}</span>
+              {atRisk > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: '#dc2626' }}>{atRisk} at risk</span>}
+              <span style={{ fontSize: 10, color: 'var(--text-3)', minWidth: 36, textAlign: 'right' }} className="mono">{open}/{total}</span>
+            </div>
+            <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: ws.color, borderRadius: 2, opacity: 0.7 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OwnershipPanel({ items }) {
+  const load = PEOPLE.map(p => {
+    const open = items.filter(i => i.owner === p.id && i.status !== 'done');
+    const atRisk = open.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; }).length;
+    return { person: p, openCount: open.length, atRisk };
+  });
+
+  const max = Math.max(...load.map(l => l.openCount), 1);
+
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="Users" size={14} color="var(--violet)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>Ownership load</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {load.map(({ person, openCount, atRisk }) => {
+          const initials = person.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+          return (
+            <div key={person.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#eef2ff', color: '#3730a3', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500 }}>{person.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{person.role}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{openCount}</div>
+                  {atRisk > 0 && <div style={{ fontSize: 9, color: '#dc2626', fontWeight: 600 }}>{atRisk} at risk</div>}
+                </div>
+              </div>
+              <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, marginLeft: 32 }}>
+                <div style={{ height: '100%', width: `${(openCount / max) * 100}%`, background: '#6366f1', borderRadius: 2 }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ActivityPanel({ events, items, onItemClick }) {
+  const getItem = (id) => items.find(i => i.id === id);
+  const eventLabel = (e) => {
+    if (e.event_type === 'created') return 'created';
+    if (e.event_type === 'status_changed') return `moved ${get(e.from, STATUSES)?.label || e.from} → ${get(e.to, STATUSES)?.label || e.to}`;
+    if (e.event_type === 'owner_changed') return `reassigned to ${get(e.to, PEOPLE)?.name || e.to}`;
+    if (e.event_type === 'deadline_changed') return `deadline changed to ${e.to}`;
+    if (e.event_type === 'deleted') return 'deleted';
+    if (e.event_type === 'note_added') return e.to;
+    return e.event_type;
+  };
+  const timeAgo = (ts) => {
+    const diff = Date.now() - ts;
+    const mins = Math.round(diff / 60000);
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `${hrs}h`;
+    const days = Math.round(hrs / 24);
+    return `${days}d`;
+  };
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="Activity" size={14} color="var(--info)" />
+          <div style={{ fontSize: 12, fontWeight: 600 }}>Recent activity</div>
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>Event log</div>
+      </div>
+      {events.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No events yet.</div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {events.map(e => {
+          const item = getItem(e.item_id);
+          const actor = get(e.actor, PEOPLE);
+          return (
+            <div key={e.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '4px 0', fontSize: 12 }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eef2ff', color: '#3730a3', fontSize: 9, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                {actor ? actor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11.5, color: 'var(--text-2)' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>{actor?.name || e.actor}</span>{' '}
+                  <span>{eventLabel(e)}</span>
+                </div>
+                {item && (
+                  <div
+                    onClick={() => onItemClick(item)}
+                    style={{ fontSize: 11, color: 'var(--text)', fontWeight: 500, cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    className="row-hover"
+                  >
+                    {item.title}
+                  </div>
+                )}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-3)' }} className="mono">{timeAgo(e.timestamp)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// INSIGHTS PAGE
+// ============================================================
+
+function InsightsPage({ items, events, onItemClick }) {
+  const blockedItems = items.filter(i => i.status === 'blocked');
+  const doneItems = items.filter(i => i.status === 'done');
+
+  // Last 8 weeks buckets
+  const weekBuckets = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dayOfWeek = now.getDay();
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - dayOfWeek);
+    const buckets = [];
+    for (let i = 7; i >= 0; i--) {
+      const start = new Date(sunday);
+      start.setDate(sunday.getDate() - i * 7);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+      buckets.push({ start: start.getTime(), end: end.getTime(), label: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) });
+    }
+    return buckets;
+  }, [events.length, items.length]);
+
+  // Velocity: items completed per week
+  const completedPerWeek = weekBuckets.map(b => {
+    const count = events.filter(e =>
+      e.event_type === 'status_changed' &&
+      e.to === 'done' &&
+      e.timestamp >= b.start &&
+      e.timestamp < b.end
+    ).length;
+    return { ...b, count };
+  });
+
+  // Created per week
+  const createdPerWeek = weekBuckets.map(b => {
+    const count = events.filter(e =>
+      e.event_type === 'created' &&
+      e.timestamp >= b.start &&
+      e.timestamp < b.end
+    ).length;
+    return { ...b, count };
+  });
+
+  // Blocker patterns — what resource types are currently blocking?
+  const blockerPatterns = useMemo(() => {
+    const counts = {};
+    blockedItems.forEach(i => {
+      const key = i.resource || 'unspecified';
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([id, count]) => ({ resource: get(id, RESOURCE_TYPES) || { id, label: 'Unspecified', icon: 'HelpCircle' }, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [items]);
+
+  // Deadline slip — items where deadline has been changed
+  const deadlineSlips = useMemo(() => {
+    const byItem = {};
+    events.forEach(e => {
+      if (e.event_type === 'deadline_changed') {
+        if (!byItem[e.item_id]) byItem[e.item_id] = { count: 0, totalDays: 0, events: [] };
+        byItem[e.item_id].count += 1;
+        byItem[e.item_id].events.push(e);
+        try {
+          const from = new Date(e.from);
+          const to = new Date(e.to);
+          const days = Math.round((to - from) / 86400000);
+          byItem[e.item_id].totalDays += days;
+        } catch (err) {}
+      }
+    });
+    return Object.entries(byItem)
+      .map(([itemId, data]) => ({ item: items.find(i => i.id === itemId), ...data }))
+      .filter(r => r.item)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [events, items]);
+
+  // Ownership concentration — who owns what % of P0/P1 items?
+  const ownershipBreakdown = useMemo(() => {
+    const critical = items.filter(i => (i.priority === 'p0' || i.priority === 'p1') && i.status !== 'done');
+    const byOwner = {};
+    critical.forEach(i => {
+      byOwner[i.owner] = (byOwner[i.owner] || 0) + 1;
+    });
+    const total = critical.length || 1;
+    return PEOPLE.map(p => ({
+      person: p,
+      count: byOwner[p.id] || 0,
+      pct: Math.round(((byOwner[p.id] || 0) / total) * 100),
+    })).sort((a, b) => b.count - a.count);
+  }, [items]);
+
+  // Max values for scaling bars
+  const maxCompleted = Math.max(1, ...completedPerWeek.map(w => w.count));
+  const maxCreated = Math.max(1, ...createdPerWeek.map(w => w.count), ...completedPerWeek.map(w => w.count));
+  const maxBlocker = Math.max(1, ...blockerPatterns.map(b => b.count));
+
+  // Time currently blocked
+  const blockedWithDuration = blockedItems.map(item => {
+    const blockEvent = events.find(e => e.item_id === item.id && e.event_type === 'status_changed' && e.to === 'blocked');
+    const blockedAt = blockEvent ? blockEvent.timestamp : (item.created_at || Date.now());
+    const days = Math.floor((Date.now() - blockedAt) / 86400000);
+    return { ...item, blockedDays: days };
+  }).sort((a, b) => b.blockedDays - a.blockedDays);
+
+  return (
+    <div>
+      {/* Headline insight */}
+      <div className="card" style={{ padding: 18, marginBottom: 14, background: blockedItems.length > 0 ? 'linear-gradient(135deg, #fff 0%, #fef2f2 100%)' : '#fff', borderLeft: blockedItems.length > 0 ? '3px solid #dc2626' : '3px solid #10b981' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <Icon name={blockedItems.length > 0 ? 'AlertTriangle' : 'CheckCircle2'} size={15} color={blockedItems.length > 0 ? '#dc2626' : '#10b981'} />
+          <div style={{ fontSize: 13, fontWeight: 600 }}>
+            {blockedItems.length > 0
+              ? `${blockedItems.length} item${blockedItems.length !== 1 ? 's' : ''} currently blocked`
+              : 'Nothing currently blocked'}
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', marginLeft: 25 }}>
+          {blockedItems.length > 0
+            ? `Oldest blocker has been stuck for ${blockedWithDuration[0]?.blockedDays || 0} days. The most common blocker type is "${blockerPatterns[0]?.resource.label || 'unspecified'}" (${blockerPatterns[0]?.count || 0} items).`
+            : 'All open items are moving. Keep an eye on deadlines and owner load.'}
+        </div>
+      </div>
+
+      {/* Row 1: Current blockers */}
+      <SectionHeader title="Current blockers" count={blockedItems.length} />
+      <div className="card" style={{ padding: 16, marginBottom: 14 }}>
+        {blockedWithDuration.length === 0 ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>Nothing is blocked right now.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {blockedWithDuration.map(item => {
+              const ws = get(item.workstream, WORKSTREAMS);
+              const owner = get(item.owner, PEOPLE);
+              const resource = get(item.resource, RESOURCE_TYPES);
+              return (
+                <div
+                  key={item.id}
+                  className="row-hover"
+                  onClick={() => onItemClick(item)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--border)' }}
+                >
+                  <div style={{ width: 4, height: 28, borderRadius: 2, background: '#dc2626' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{item.title}</div>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 11, color: 'var(--text-2)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span className="dot" style={{ backgroundColor: ws.color }} />{ws.label}
+                      </span>
+                      <span>•</span>
+                      <span>{owner?.name || item.owner}</span>
+                      {resource && <><span>•</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <Icon name={resource.icon} size={10} />Waiting on {resource.label.toLowerCase()}
+                        </span>
+                      </>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="mono" style={{ fontSize: 14, fontWeight: 700, color: item.blockedDays > 14 ? '#dc2626' : item.blockedDays > 7 ? '#ea580c' : 'var(--text-2)' }}>{item.blockedDays}d</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.4 }}>blocked</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Row 2: Velocity side by side */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+        <div>
+          <SectionHeader title="Completion velocity" />
+          <div className="card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 12 }}>Items completed per week, last 8 weeks</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 120 }}>
+              {completedPerWeek.map((w, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div className="mono" style={{ fontSize: 10, color: w.count > 0 ? 'var(--text)' : 'var(--text-3)', fontWeight: 600 }}>{w.count || ''}</div>
+                  <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', height: 80, position: 'relative' }}>
+                    <div style={{ width: '100%', height: `${(w.count / maxCompleted) * 100}%`, background: '#10b981', borderRadius: '3px 3px 0 0', minHeight: w.count > 0 ? 4 : 0, transition: 'height 0.3s' }} />
+                  </div>
+                  <div style={{ fontSize: 9, color: 'var(--text-3)', whiteSpace: 'nowrap' }} className="mono">{w.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <SectionHeader title="Work in vs. work out" />
+          <div className="card" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, fontSize: 11, color: 'var(--text-2)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 10, height: 10, background: '#6366f1', borderRadius: 2 }} />
+                Created
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 10, height: 10, background: '#10b981', borderRadius: 2 }} />
+                Completed
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 120 }}>
+              {createdPerWeek.map((w, i) => {
+                const completed = completedPerWeek[i].count;
+                return (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 80, width: '100%' }}>
+                      <div style={{ flex: 1, height: `${(w.count / maxCreated) * 100}%`, background: '#6366f1', borderRadius: '2px 2px 0 0', minHeight: w.count > 0 ? 4 : 0, opacity: 0.85 }} />
+                      <div style={{ flex: 1, height: `${(completed / maxCreated) * 100}%`, background: '#10b981', borderRadius: '2px 2px 0 0', minHeight: completed > 0 ? 4 : 0 }} />
+                    </div>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', whiteSpace: 'nowrap' }} className="mono">{w.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Blocker patterns + Deadline slip */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 14, marginBottom: 14 }}>
+        <div>
+          <SectionHeader title="Blocker patterns" />
+          <div className="card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 12 }}>What resource types are blocking work right now</div>
+            {blockerPatterns.length === 0 ? (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No blockers.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {blockerPatterns.map(({ resource, count }) => (
+                  <div key={resource.id}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <Icon name={resource.icon} size={12} color="var(--text-2)" />
+                      <span style={{ fontSize: 12, fontWeight: 500, flex: 1 }}>{resource.label}</span>
+                      <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{count}</span>
+                    </div>
+                    <div style={{ height: 6, background: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${(count / maxBlocker) * 100}%`, background: '#dc2626', borderRadius: 3 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <SectionHeader title="Deadline slip" />
+          <div className="card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 12 }}>Items whose deadlines have been pushed</div>
+            {deadlineSlips.length === 0 ? (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No deadlines have been changed yet.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {deadlineSlips.map(({ item, count, totalDays }) => {
+                  const ws = get(item.workstream, WORKSTREAMS);
+                  return (
+                    <div
+                      key={item.id}
+                      className="row-hover"
+                      onClick={() => onItemClick(item)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', borderRadius: 5, cursor: 'pointer', fontSize: 12 }}
+                    >
+                      <span className="dot" style={{ backgroundColor: ws.color }} />
+                      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{item.title}</div>
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--text-2)', minWidth: 50, textAlign: 'right' }}>{count}× pushed</div>
+                      <div className="mono" style={{ fontSize: 11, fontWeight: 600, color: totalDays > 7 ? '#dc2626' : 'var(--text-2)', minWidth: 60, textAlign: 'right' }}>
+                        {totalDays >= 0 ? '+' : ''}{totalDays}d
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Ownership concentration */}
+      <SectionHeader title="Ownership concentration of critical work" />
+      <div className="card" style={{ padding: 16, marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-2)', marginBottom: 14 }}>Distribution of open P0 and P1 items by owner. High concentration = single-point-of-failure risk.</div>
+        {ownershipBreakdown.every(o => o.count === 0) ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No P0 or P1 items open.</div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', height: 32, borderRadius: 6, overflow: 'hidden', marginBottom: 14, border: '1px solid var(--border)' }}>
+              {ownershipBreakdown.filter(o => o.count > 0).map((o, i) => {
+                const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+                return (
+                  <div
+                    key={o.person.id}
+                    title={`${o.person.name}: ${o.count} items (${o.pct}%)`}
+                    style={{ width: `${o.pct}%`, background: colors[i % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 600, minWidth: 20 }}
+                  >
+                    {o.pct >= 10 ? `${o.pct}%` : ''}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {ownershipBreakdown.map((o, i) => {
+                const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+                const initials = o.person.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                return (
+                  <div key={o.person.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: o.count > 0 ? colors[i % colors.length] : '#e2e8f0', color: '#fff', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 500 }}>{o.person.name}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--text-3)' }}>{o.person.role}</div>
+                    </div>
+                    <div className="mono" style={{ fontSize: 13, fontWeight: 600, minWidth: 36, textAlign: 'right' }}>{o.count}</div>
+                    <div className="mono" style={{ fontSize: 11, color: 'var(--text-3)', minWidth: 44, textAlign: 'right' }}>{o.pct}%</div>
+                  </div>
+                );
+              })}
+            </div>
+            {ownershipBreakdown[0]?.pct >= 70 && (
+              <div style={{ marginTop: 14, padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, fontSize: 11.5, color: '#991b1b', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <Icon name="AlertTriangle" size={13} color="#dc2626" style={{ marginTop: 1 }} />
+                <div>
+                  <strong>Concentration risk:</strong> {ownershipBreakdown[0].person.name} owns {ownershipBreakdown[0].pct}% of critical items. Consider delegation or hiring to distribute load.
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Data note */}
+      <div className="card" style={{ padding: 14, background: '#f8fafc', fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <Icon name="Info" size={12} color="var(--text-3)" style={{ marginTop: 2 }} />
+        <div>
+          Insights are computed from the event log ({events.length} events across {items.length} items). Charts populate as the tracker is used. Over time, trends like velocity slowdowns, recurring blockers, and ownership drift become visible — making it easier to intervene early.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ITEMS TABLE (used in All items + workstream pages)
+// ============================================================
+
+function ItemsTable({ items, allItems, onItemClick, onAddSubtask, updateItem, showWorkstreamCol = true, showParent = true }) {
+  // Build a tree: top-level items with children grouped
+  const topLevel = items.filter(i => !i.parent_id);
+  const childrenByParent = {};
+  items.forEach(i => {
+    if (i.parent_id) {
+      if (!childrenByParent[i.parent_id]) childrenByParent[i.parent_id] = [];
+      childrenByParent[i.parent_id].push(i);
+    }
+  });
+
+  // Orphan subtasks (parent not in filtered set but subtask is) — show at top level
+  const orphans = items.filter(i => i.parent_id && !items.find(p => p.id === i.parent_id));
+
+  const sortFn = (a, b) => {
+    const order = { overdue: 0, critical: 1, blocked: 2, warning: 3, ok: 4, done: 5 };
+    const ra = order[riskLevel(a)], rb = order[riskLevel(b)];
+    if (ra !== rb) return ra - rb;
+    return new Date(a.deadline) - new Date(b.deadline);
+  };
+
+  const sortedTop = [...topLevel, ...orphans].sort(sortFn);
+
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div style={{ display: 'flex', padding: '10px 0', background: 'var(--panel-alt)', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        <div style={{ flex: '0 0 28px', padding: '0 4px 0 16px' }} />
+        <div style={{ flex: '0 0 32px', padding: '0 4px', textAlign: 'center' }}>Crit</div>
+        <div style={{ flex: '1 1 auto', padding: '0 10px' }}>Item</div>
+        {showWorkstreamCol && <div style={{ flex: '0 0 110px', padding: '0 10px' }}>Workstream</div>}
+        <div style={{ flex: '0 0 110px', padding: '0 10px' }}>Owner</div>
+        <div style={{ flex: '0 0 120px', padding: '0 10px' }}>Resource</div>
+        <div style={{ flex: '0 0 90px', padding: '0 10px' }}>Effort</div>
+        <div style={{ flex: '0 0 100px', padding: '0 10px' }}>Status</div>
+        <div style={{ flex: '0 0 80px', padding: '0 16px 0 10px', textAlign: 'right' }}>Deadline</div>
+      </div>
+      {sortedTop.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>No items to show.</div>}
+      {sortedTop.map(item => (
+        <ItemRowWithChildren
+          key={item.id}
+          item={item}
+          children={(childrenByParent[item.id] || []).sort(sortFn)}
+          onItemClick={onItemClick}
+          onAddSubtask={onAddSubtask}
+          updateItem={updateItem}
+          showWorkstreamCol={showWorkstreamCol}
+          showParent={showParent}
+          allItems={allItems}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ItemRowWithChildren({ item, children, onItemClick, onAddSubtask, updateItem, showWorkstreamCol, showParent, allItems }) {
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = children.length > 0;
+  return (
+    <>
+      <ItemRow
+        item={item}
+        onItemClick={onItemClick}
+        onAddSubtask={onAddSubtask}
+        updateItem={updateItem}
+        showWorkstreamCol={showWorkstreamCol}
+        hasChildren={hasChildren}
+        expanded={expanded}
+        onToggleExpand={() => setExpanded(!expanded)}
+        depth={0}
+      />
+      {expanded && children.map(child => (
+        <ItemRow
+          key={child.id}
+          item={child}
+          onItemClick={onItemClick}
+          onAddSubtask={onAddSubtask}
+          updateItem={updateItem}
+          showWorkstreamCol={showWorkstreamCol}
+          hasChildren={false}
+          depth={1}
+        />
+      ))}
+    </>
+  );
+}
+
+function ItemRow({ item, onItemClick, onAddSubtask, updateItem, showWorkstreamCol, hasChildren, expanded, onToggleExpand, depth = 0 }) {
+  const ws = get(item.workstream, WORKSTREAMS);
+  const status = get(item.status, STATUSES);
+  const owner = get(item.owner, PEOPLE);
+  const resource = get(item.resource, RESOURCE_TYPES);
+  const tf = get(item.timeframe, TIMEFRAMES);
+  const risk = riskLevel(item);
+  const score = criticalityScore(item);
+  const riskColors = { overdue: '#dc2626', critical: '#ea580c', blocked: '#dc2626', warning: '#ca8a04', ok: '#64748b', done: '#10b981' };
+
+  const cycleStatus = (e) => {
+    e.stopPropagation();
+    const order = ['not_started', 'in_progress', 'blocked', 'done'];
+    const next = order[(order.indexOf(item.status) + 1) % order.length];
+    updateItem(item.id, { status: next });
+  };
+
+  return (
+    <div
+      className="row-hover"
+      onClick={() => onItemClick(item)}
+      style={{
+        display: 'flex', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid #f1f5f9',
+        cursor: 'pointer', fontSize: 12.5, opacity: item.status === 'done' ? 0.55 : 1,
+      }}
+    >
+      <div style={{ flex: '0 0 28px', padding: '0 4px 0 16px', display: 'flex', justifyContent: 'center' }}>
+        {hasChildren ? (
+          <button onClick={(e) => { e.stopPropagation(); onToggleExpand(); }} className="icon-btn" style={{ padding: 2 }}>
+            <Icon name={expanded ? 'ChevronDown' : 'ChevronRight'} size={13} />
+          </button>
+        ) : depth > 0 ? (
+          <div style={{ width: 12, height: 1, background: '#cbd5e1', marginLeft: 8 }} />
+        ) : null}
+      </div>
+      <div style={{ flex: '0 0 32px', padding: '0 4px', display: 'flex', justifyContent: 'center' }}>
+        <ScoreBadge score={score} />
+      </div>
+      <div style={{ flex: '1 1 auto', padding: '0 10px', minWidth: 0, paddingLeft: depth * 20 + 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={cycleStatus} className="icon-btn" style={{ padding: 2 }}>
+            {item.status === 'done' ? <Icon name="CheckCircle2" size={14} color="#10b981" /> :
+             item.status === 'blocked' ? <Icon name="AlertCircle" size={14} color="#dc2626" /> :
+             item.status === 'in_progress' ? <Icon name="Clock" size={14} color="#3b82f6" /> :
+             <Icon name="Circle" size={14} color="#cbd5e1" />}
+          </button>
+          <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: item.status === 'done' ? 'line-through' : 'none' }}>
+            {item.title}
+          </div>
+          {item.links && item.links.length > 0 && (
+            <span style={{ fontSize: 10, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Icon name="Link2" size={10} />{item.links.length}
+            </span>
+          )}
+        </div>
+      </div>
+      {showWorkstreamCol && (
+        <div style={{ flex: '0 0 110px', padding: '0 10px' }}>
+          <span style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span className="dot" style={{ backgroundColor: ws.color }} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ws.label}</span>
+          </span>
+        </div>
+      )}
+      <div style={{ flex: '0 0 110px', padding: '0 10px', fontSize: 11.5, color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {owner?.name || '—'}
+      </div>
+      <div style={{ flex: '0 0 120px', padding: '0 10px', fontSize: 11, color: 'var(--text-2)' }}>
+        {resource ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Icon name={resource.icon} size={10} />
+            <span>{resource.label}</span>
+          </span>
+        ) : '—'}
+      </div>
+      <div style={{ flex: '0 0 90px', padding: '0 10px', fontSize: 11, color: 'var(--text-2)' }} className="mono">
+        {tf ? `~${tf.label}` : '—'}
+      </div>
+      <div style={{ flex: '0 0 100px', padding: '0 10px' }}>
+        <span className="chip" style={{ color: status.color, borderColor: `${status.color}44`, backgroundColor: `${status.color}11` }}>
+          {status.label}
+        </span>
+      </div>
+      <div style={{ flex: '0 0 80px', padding: '0 16px 0 10px', textAlign: 'right' }}>
+        <span className="mono" style={{ fontSize: 11, fontWeight: 600, color: riskColors[risk] }}>
+          {item.status === 'done' ? '—' : formatDeadline(item.deadline)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ALL ITEMS PAGE
+// ============================================================
+
+function AllItemsPage({ items, onItemClick, onAddSubtask, updateItem }) {
+  const [fWS, setFWS] = useState('all');
+  const [fStatus, setFStatus] = useState('all_open');
+  const [fOwner, setFOwner] = useState('all');
+  const [search, setSearch] = useState('');
+
+  let filtered = items;
+  if (fWS !== 'all') filtered = filtered.filter(i => i.workstream === fWS);
+  if (fStatus === 'all_open') filtered = filtered.filter(i => i.status !== 'done');
+  else if (fStatus !== 'all') filtered = filtered.filter(i => i.status === fStatus);
+  if (fOwner !== 'all') filtered = filtered.filter(i => i.owner === fOwner);
+  if (search) filtered = filtered.filter(i => i.title.toLowerCase().includes(search.toLowerCase()) || (i.notes || '').toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div>
+      <FilterBar
+        search={search} setSearch={setSearch}
+        fWS={fWS} setFWS={setFWS}
+        fStatus={fStatus} setFStatus={setFStatus}
+        fOwner={fOwner} setFOwner={setFOwner}
+      />
+      <ItemsTable items={filtered} allItems={items} onItemClick={onItemClick} onAddSubtask={onAddSubtask} updateItem={updateItem} />
+      <div style={{ padding: '12px 4px', fontSize: 11, color: 'var(--text-3)' }}>
+        Showing {filtered.length} of {items.length} items • Sorted by risk, then deadline
+      </div>
+    </div>
+  );
+}
+
+function FilterBar({ search, setSearch, fWS, setFWS, fStatus, setFStatus, fOwner, setFOwner }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid var(--border)', borderRadius: 7, width: 240 }}>
+        <Icon name="Search" size={13} color="var(--text-3)" style={{ marginLeft: 10 }} />
+        <input
+          type="text" placeholder="Search title or notes..." value={search} onChange={(e) => setSearch(e.target.value)}
+          style={{ border: 'none', padding: '7px 10px', fontSize: 12, flex: 1, background: 'transparent', color: 'var(--text)' }}
+        />
+      </div>
+      <FilterDropdown label="Workstream" value={fWS} onChange={setFWS}
+        options={[{ id: 'all', label: 'All' }, ...WORKSTREAMS.map(w => ({ id: w.id, label: w.label, color: w.color }))]}
+      />
+      <FilterDropdown label="Status" value={fStatus} onChange={setFStatus}
+        options={[{ id: 'all_open', label: 'All open' }, { id: 'all', label: 'All (incl. done)' }, ...STATUSES.map(s => ({ id: s.id, label: s.label, color: s.color }))]}
+      />
+      <FilterDropdown label="Owner" value={fOwner} onChange={setFOwner}
+        options={[{ id: 'all', label: 'All' }, ...PEOPLE.map(p => ({ id: p.id, label: p.name }))]}
+      />
+    </div>
+  );
+}
+
+function FilterDropdown({ label, value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => o.id === value);
+
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="btn btn-secondary"
+        style={{ fontSize: 12 }}
+      >
+        <span style={{ color: 'var(--text-3)' }}>{label}:</span>
+        <span style={{ fontWeight: 500 }}>{selected?.label}</span>
+        <Icon name="ChevronDown" size={11} color="var(--text-2)" />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, minWidth: 180, background: '#fff', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.08)', padding: 4, zIndex: 20 }}>
+          {options.map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => { onChange(opt.id); setOpen(false); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 10px', borderRadius: 5, fontSize: 12, textAlign: 'left', background: opt.id === value ? '#f1f5f9' : 'transparent' }}
+              className="row-hover"
+            >
+              {opt.color && <span className="dot" style={{ backgroundColor: opt.color }} />}
+              <span>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// WORKSTREAM PAGE
+// ============================================================
+
+function WorkstreamPage({ workstreamId, items, events, onItemClick, onAddSubtask, updateItem }) {
+  const ws = get(workstreamId, WORKSTREAMS);
+  if (!ws) return <div>Workstream not found</div>;
+
+  const wsItems = items.filter(i => i.workstream === workstreamId);
+  const open = wsItems.filter(i => i.status !== 'done');
+  const atRisk = open.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; });
+  const wsEvents = events.filter(e => wsItems.find(i => i.id === e.item_id)).slice(0, 5);
+
+  // Aggregate connected resources across items
+  const allLinks = [];
+  wsItems.forEach(i => (i.links || []).forEach(l => allLinks.push({ ...l, itemId: i.id, itemTitle: i.title })));
+
+  return (
+    <div>
+      {/* WS Header card */}
+      <div className="card" style={{ padding: 16, marginBottom: 14, borderLeft: `3px solid ${ws.color}` }}>
+        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.55 }}>{ws.description}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 20 }}>
+            <MiniStat label="Open" value={open.length} />
+            <MiniStat label="At risk" value={atRisk.length} tone="danger" />
+            <MiniStat label="In progress" value={open.filter(i => i.status === 'in_progress').length} tone="info" />
+            <MiniStat label="Done" value={wsItems.length - open.length} tone="success" />
+          </div>
+        </div>
+      </div>
+
+      {/* Items + Connected data side by side */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14, marginBottom: 14 }}>
+        <div>
+          <SectionHeader title="Items" count={wsItems.length} />
+          <ItemsTable items={wsItems} allItems={items} onItemClick={onItemClick} onAddSubtask={onAddSubtask} updateItem={updateItem} showWorkstreamCol={false} />
+        </div>
+        <div>
+          <SectionHeader title="Connected resources" count={allLinks.length} />
+          <ConnectedResources links={allLinks} items={items} onItemClick={onItemClick} />
+        </div>
+      </div>
+
+      {/* Recent activity for this workstream */}
+      <SectionHeader title="Recent activity in this workstream" count={wsEvents.length} />
+      <ActivityPanel events={wsEvents} items={items} onItemClick={onItemClick} />
+    </div>
+  );
+}
+
+function MiniStat({ label, value, tone = 'neutral' }) {
+  const colors = { neutral: 'var(--text)', danger: 'var(--danger)', info: 'var(--info)', success: 'var(--ok)' };
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 600, color: colors[tone], letterSpacing: -0.5 }}>{value}</div>
+    </div>
+  );
+}
+
+function SectionHeader({ title, count }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, padding: '0 4px' }}>
+      <div style={{ fontSize: 12, fontWeight: 600 }}>{title}</div>
+      {count !== undefined && <div style={{ fontSize: 11, color: 'var(--text-3)' }} className="mono">{count}</div>}
+    </div>
+  );
+}
+
+function ConnectedResources({ links, items, onItemClick }) {
+  if (links.length === 0) {
+    return <div className="card" style={{ padding: 20, textAlign: 'center', color: 'var(--text-3)', fontSize: 12 }}>No connected resources yet.</div>;
+  }
+  const byType = {};
+  links.forEach(l => { if (!byType[l.type]) byType[l.type] = []; byType[l.type].push(l); });
+
+  return (
+    <div className="card" style={{ padding: 10 }}>
+      {Object.entries(byType).map(([type, ls]) => {
+        const meta = LINK_TYPES[type] || LINK_TYPES.external;
+        return (
+          <div key={type} style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', fontSize: 10, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              <Icon name={meta.icon} size={11} color={meta.color} />
+              <span>{meta.label}</span>
+              <span className="mono" style={{ marginLeft: 'auto' }}>{ls.length}</span>
+            </div>
+            {ls.map((l, idx) => {
+              const item = items.find(i => i.id === l.itemId);
+              return (
+                <div
+                  key={idx}
+                  className="row-hover"
+                  onClick={() => item && onItemClick(item)}
+                  style={{ padding: '6px 8px', borderRadius: 5, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.label}</span>
+                    <Icon name="ExternalLink" size={10} color="var(--text-3)" />
+                  </div>
+                  {l.itemTitle && <div style={{ fontSize: 10, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>↳ {l.itemTitle}</div>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================
+// PEOPLE PAGE
+// ============================================================
+
+function PeoplePage({ items, events, onItemClick }) {
+  const [list, setList] = useState(PEOPLE);
+  const [editingId, setEditingId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState({ name: '', role: '', workstreams: [] });
+
+  const commit = (newList) => {
+    setList(newList);
+    persistPeople(newList);
+  };
+
+  const startEdit = (p) => {
+    setEditingId(p.id);
+    setAdding(false);
+    setDraft({ name: p.name, role: p.role, workstreams: [...(p.workstreams || [])] });
+  };
+
+  const saveEdit = () => {
+    if (adding) {
+      const id = `p_${Date.now()}`;
+      commit([...list, { id, ...draft }]);
+    } else {
+      commit(list.map(p => p.id === editingId ? { ...p, ...draft } : p));
+    }
+    setEditingId(null);
+    setAdding(false);
+    setDraft({ name: '', role: '', workstreams: [] });
+  };
+
+  const remove = (id) => {
+    const ownedCount = items.filter(i => i.owner === id && i.status !== 'done').length;
+    const msg = ownedCount > 0
+      ? `This person owns ${ownedCount} open item${ownedCount !== 1 ? 's' : ''}. Remove them anyway? Items will keep the assignment and need to be reassigned.`
+      : 'Remove this person?';
+    if (window.confirm(msg)) commit(list.filter(p => p.id !== id));
+  };
+
+  const startAdd = () => {
+    setAdding(true);
+    setEditingId('__new__');
+    setDraft({ name: '', role: '', workstreams: WORKSTREAMS.map(w => w.id) });
+  };
+
+  const toggleWorkstream = (wsId) => {
+    setDraft(prev => ({
+      ...prev,
+      workstreams: prev.workstreams.includes(wsId)
+        ? prev.workstreams.filter(w => w !== wsId)
+        : [...prev.workstreams, wsId],
+    }));
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <button className="btn btn-secondary" onClick={startAdd}>
+          <Icon name="UserPlus" size={13} />
+          <span>Add person</span>
+        </button>
+      </div>
+
+      {adding && (
+        <div className="card" style={{ padding: 16, marginBottom: 14, border: '1.5px solid #6366f1', background: '#eef2ff' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>New person</div>
+          <PersonEditForm draft={draft} setDraft={setDraft} toggleWorkstream={toggleWorkstream} />
+          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+            <button className="btn btn-primary" disabled={!draft.name.trim()} style={{ opacity: draft.name.trim() ? 1 : 0.4 }} onClick={saveEdit}>Add</button>
+            <button className="btn btn-secondary" onClick={() => { setAdding(false); setEditingId(null); }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 14 }}>
+        {list.map(person => {
+          const owned = items.filter(i => i.owner === person.id);
+          const open = owned.filter(i => i.status !== 'done');
+          const atRisk = open.filter(i => { const r = riskLevel(i); return r === 'overdue' || r === 'critical' || r === 'blocked'; });
+          const initials = person.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+          const isEditing = editingId === person.id && !adding;
+
+          if (isEditing) {
+            return (
+              <div key={person.id} className="card" style={{ padding: 16, border: '1.5px solid #6366f1', background: '#eef2ff' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Edit person</div>
+                <PersonEditForm draft={draft} setDraft={setDraft} toggleWorkstream={toggleWorkstream} />
+                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                  <button className="btn btn-primary" onClick={saveEdit}>Save</button>
+                  <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={person.id} className="card" style={{ padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{person.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)' }}>{person.role}</div>
+                </div>
+                <button className="icon-btn" onClick={() => startEdit(person)} title="Edit"><Icon name="Pencil" size={12} /></button>
+                <button className="icon-btn" onClick={() => remove(person.id)} title="Remove"><Icon name="Trash2" size={12} /></button>
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                <MiniStat label="Open" value={open.length} />
+                <MiniStat label="At risk" value={atRisk.length} tone="danger" />
+                <MiniStat label="Done" value={owned.length - open.length} tone="success" />
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Top open items</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {open.sort((a, b) => criticalityScore(b) - criticalityScore(a)).slice(0, 5).map(item => {
+                  const ws = get(item.workstream, WORKSTREAMS);
+                  const risk = riskLevel(item);
+                  const riskColors = { overdue: '#dc2626', critical: '#ea580c', blocked: '#dc2626', warning: '#ca8a04', ok: '#64748b' };
+                  return (
+                    <div key={item.id} className="row-hover" onClick={() => onItemClick(item)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}>
+                      <ScoreBadge score={criticalityScore(item)} />
+                      <span className="dot" style={{ backgroundColor: ws.color }} />
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                      <span className="mono" style={{ fontSize: 10, color: riskColors[risk], fontWeight: 600 }}>{formatDeadline(item.deadline)}</span>
+                    </div>
+                  );
+                })}
+                {open.length === 0 && <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-3)', fontSize: 11 }}>No open items.</div>}
+              </div>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Workstreams</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {(person.workstreams || []).map(wsId => {
+                    const ws = get(wsId, WORKSTREAMS);
+                    if (!ws) return null;
+                    return (
+                      <span key={wsId} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: `${ws.color}15`, color: ws.color, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span className="dot" style={{ backgroundColor: ws.color, width: 6, height: 6 }} />{ws.label}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PersonEditForm({ draft, setDraft, toggleWorkstream }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div>
+        <div className="section-label" style={{ marginBottom: 4 }}>Name</div>
+        <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="input" placeholder="e.g. Head of Operations" />
+      </div>
+      <div>
+        <div className="section-label" style={{ marginBottom: 4 }}>Role</div>
+        <input value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} className="input" placeholder="e.g. Operations lead" />
+      </div>
+      <div>
+        <div className="section-label" style={{ marginBottom: 6 }}>Workstreams they touch</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {WORKSTREAMS.map(ws => {
+            const active = draft.workstreams.includes(ws.id);
+            return (
+              <button
+                key={ws.id}
+                onClick={() => toggleWorkstream(ws.id)}
+                style={{
+                  fontSize: 11, padding: '4px 10px', borderRadius: 12,
+                  border: `1px solid ${active ? ws.color : 'var(--border)'}`,
+                  background: active ? `${ws.color}15` : '#fff',
+                  color: active ? ws.color : 'var(--text-2)',
+                  display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: active ? 600 : 400,
+                }}
+              >
+                <span className="dot" style={{ backgroundColor: ws.color, width: 6, height: 6 }} />
+                {ws.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// DATA & EXPORT PAGE
+// ============================================================
+
+function ToolsAndIntakePage({ items, onAddItems }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <ConnectedToolsPanel />
+      <IntakePanel items={items} onAddItems={onAddItems} />
+    </div>
+  );
+}
+
+function ConnectedToolsPanel() {
+  const [tools, setTools] = useState(() => {
+    try { const v = localStorage.getItem('bluedot_tools_v1'); if (v) return JSON.parse(v); } catch (e) {}
+    return DEFAULT_TOOLS;
+  });
+  const [adding, setAdding] = useState(false);
+  const [newTool, setNewTool] = useState({ name: '', url: '', description: '', color: '#64748b' });
+
+  const persist = (v) => {
+    setTools(v);
+    try { localStorage.setItem('bluedot_tools_v1', JSON.stringify(v)); } catch (e) {}
+  };
+
+  const addTool = () => {
+    if (!newTool.name || !newTool.url) return;
+    persist([...tools, { ...newTool, id: `t_${Date.now()}` }]);
+    setNewTool({ name: '', url: '', description: '', color: '#64748b' });
+    setAdding(false);
+  };
+
+  const removeTool = (id) => persist(tools.filter(t => t.id !== id));
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <SectionHeader title="Connected workspaces" count={tools.length} />
+        <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 11 }} onClick={() => setAdding(true)}>
+          <Icon name="Plus" size={11} />
+          <span>Add workspace</span>
+        </button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        {tools.map(tool => (
+          <div key={tool.id} className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 7, background: `${tool.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: tool.color }}>
+                {tool.name.slice(0, 1).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tool.name}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tool.url.replace(/^https?:\/\//, '')}</div>
+              </div>
+              <button className="icon-btn" onClick={() => removeTool(tool.id)} title="Remove">
+                <Icon name="X" size={12} />
+              </button>
+            </div>
+            {tool.description && <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5 }}>{tool.description}</div>}
+            <button
+              className="btn btn-secondary"
+              style={{ width: '100%', justifyContent: 'center', marginTop: 6, fontSize: 11.5 }}
+              onClick={() => window.open(tool.url, '_blank')}
+            >
+              <Icon name="ExternalLink" size={11} />
+              <span>Launch</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {adding && (
+        <div className="card" style={{ padding: 14, marginTop: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Add workspace</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input className="input" placeholder="Name (e.g. Gusto)" value={newTool.name} onChange={(e) => setNewTool({ ...newTool, name: e.target.value })} />
+            <input className="input" placeholder="URL (e.g. https://app.gusto.com)" value={newTool.url} onChange={(e) => setNewTool({ ...newTool, url: e.target.value })} />
+            <input className="input" placeholder="Description (optional)" value={newTool.description} onChange={(e) => setNewTool({ ...newTool, description: e.target.value })} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ fontSize: 11, color: 'var(--text-2)' }}>Accent color:</label>
+              <input type="color" value={newTool.color} onChange={(e) => setNewTool({ ...newTool, color: e.target.value })} style={{ width: 30, height: 24, border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+              <button className="btn btn-primary" onClick={addTool}>Add</button>
+              <button className="btn btn-secondary" onClick={() => { setAdding(false); setNewTool({ name: '', url: '', description: '', color: '#64748b' }); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="card" style={{ padding: 14, marginTop: 10, background: '#f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <Icon name="Info" size={13} color="var(--text-3)" style={{ marginTop: 2 }} />
+          <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6 }}>
+            Add any internal tool, SaaS platform, or workspace you want quick access to. Clicking "Launch" opens the tool in a new tab. Future versions can deep-link into specific documents associated with each tracked item.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_TOOLS = [
+  { id: 't_gworkspace', name: 'Google Workspace', url: 'https://workspace.google.com', description: 'Admin console for users, groups, and settings.', color: '#4285f4' },
+  { id: 't_gdrive', name: 'Google Drive', url: 'https://drive.google.com', description: 'Shared files, SOPs, contracts, board documents.', color: '#fbbf24' },
+  { id: 't_gmail', name: 'Gmail', url: 'https://mail.google.com', description: 'Team email, vendor correspondence.', color: '#ea4335' },
+  { id: 't_slack', name: 'Slack', url: 'https://slack.com', description: 'Team communication, vendor channels, ops alerts.', color: '#7c3aed' },
+  { id: 't_notion', name: 'Notion', url: 'https://www.notion.so', description: 'Playbooks, docs, meeting notes, compliance calendar.', color: '#374151' },
+  { id: 't_ashby', name: 'Ashby', url: 'https://app.ashbyhq.com', description: 'ATS for hiring pipeline and interview scorecards.', color: '#10b981' },
+  { id: 't_gusto', name: 'Gusto', url: 'https://app.gusto.com', description: 'Payroll, benefits, 401(k) administration.', color: '#ff6b35' },
+  { id: 't_ramp', name: 'Ramp', url: 'https://app.ramp.com', description: 'Corporate cards, expense management, spend tracking.', color: '#0f172a' },
+];
+
+function IntakePanel({ items, onAddItems }) {
+  const [mode, setMode] = useState('prompt'); // prompt | upload
+  const [context, setContext] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [proposals, setProposals] = useState(null);
+  const [selectedProposals, setSelectedProposals] = useState(new Set());
+  const [error, setError] = useState('');
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    setUploadedFile({ name: file.name, size: file.size });
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const maxChars = 15000;
+      const truncated = text.length > maxChars ? text.slice(0, maxChars) + '\n\n[...truncated]' : text;
+      setContext(truncated);
+    };
+    if (file.type.startsWith('image/') || !file.type.match(/text|csv|json|xml|html/)) {
+      setError('Text-based files only (CSV, TXT, MD, JSON, etc.). For spreadsheets, please export to CSV first or paste content directly.');
+      setUploadedFile(null);
+      return;
+    }
+    reader.readAsText(file);
+    setError('');
+  };
+
+  const generate = async () => {
+    const apiKey = localStorage.getItem(STORAGE_KEY_API) || '';
+    if (!apiKey) {
+      setError('Add an API key in Settings to use this feature.');
+      return;
+    }
+    if (!instructions.trim()) {
+      setError('Please describe what tasks you want to create.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    setProposals(null);
+
+    try {
+      const systemPrompt = `You generate operational tasks for BlueDot Impact's Ops Operations Center based on user-provided context and instructions.
+
+Available workstreams: ${WORKSTREAMS.map(w => `"${w.id}" (${w.label})`).join(', ')}
+Available owners: ${PEOPLE.map(p => `"${p.id}" (${p.name})`).join(', ')}
+Available priorities: "p0" (urgent), "p1" (high), "p2" (medium), "p3" (low)
+Available statuses: "not_started", "in_progress", "blocked", "done"
+Available resource types: ${RESOURCE_TYPES.map(r => `"${r.id}" (${r.label})`).join(', ')}
+Available timeframes: ${TIMEFRAMES.map(t => `"${t.id}" (${t.label})`).join(', ')}
+
+Today's date: ${new Date().toISOString().slice(0, 10)}
+
+Return ONLY a valid JSON object with this exact structure, no prose, no markdown:
+{
+  "tasks": [
+    {
+      "title": "Short imperative task title",
+      "workstream": "workstream_id",
+      "owner": "person_id",
+      "priority": "p0|p1|p2|p3",
+      "status": "not_started",
+      "deadline": "YYYY-MM-DD",
+      "resource": "resource_id",
+      "timeframe": "timeframe_id",
+      "notes": "1-3 sentences of context explaining what needs to happen"
+    }
+  ]
+}
+
+Rules:
+- Generate 1-8 tasks maximum. Be precise, not exhaustive.
+- Only use IDs from the lists above. No made-up values.
+- Default owner to "head_ops" unless the context clearly indicates someone else.
+- Default status to "not_started".
+- Set realistic deadlines based on urgency implied by the context.
+- Tasks should be specific and actionable, not vague.`;
+
+      const userMsg = `Context${context ? ':' : ' (none provided)'}
+${context || ''}
+
+Instructions: ${instructions}`;
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 2000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMsg }],
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        setError(`API error: ${data.error.message || 'unknown'}`);
+        return;
+      }
+
+      const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || '';
+      let jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        setError('Could not parse response. Try again with clearer instructions.');
+        return;
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
+        setError('Response did not contain a tasks array.');
+        return;
+      }
+
+      setProposals(parsed.tasks);
+      setSelectedProposals(new Set(parsed.tasks.map((_, i) => i)));
+    } catch (e) {
+      setError(`Error: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const commitProposals = () => {
+    if (!proposals) return;
+    const selected = proposals.filter((_, i) => selectedProposals.has(i));
+    onAddItems(selected);
+    setProposals(null);
+    setSelectedProposals(new Set());
+    setContext('');
+    setInstructions('');
+    setUploadedFile(null);
+  };
+
+  const updateProposal = (idx, updates) => {
+    setProposals(prev => prev.map((p, i) => i === idx ? { ...p, ...updates } : p));
+  };
+
+  const toggleProposal = (idx) => {
+    const next = new Set(selectedProposals);
+    if (next.has(idx)) next.delete(idx); else next.add(idx);
+    setSelectedProposals(next);
+  };
+
+  return (
+    <div>
+      <SectionHeader title="Intake" />
+      <div className="card" style={{ padding: 16 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.55 }}>
+          Upload a document or paste context, describe what needs to happen, and the intake will propose structured tasks you can review and commit to the tracker.
+        </div>
+
+        {/* Mode toggle */}
+        <div style={{ display: 'flex', gap: 4, padding: 3, background: '#f1f5f9', borderRadius: 7, marginBottom: 12 }}>
+          <button
+            onClick={() => setMode('prompt')}
+            style={{ flex: 1, padding: '6px 10px', borderRadius: 5, fontSize: 12, fontWeight: 500, background: mode === 'prompt' ? '#fff' : 'transparent', color: mode === 'prompt' ? 'var(--text)' : 'var(--text-2)', boxShadow: mode === 'prompt' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+          >
+            Prompt only
+          </button>
+          <button
+            onClick={() => setMode('upload')}
+            style={{ flex: 1, padding: '6px 10px', borderRadius: 5, fontSize: 12, fontWeight: 500, background: mode === 'upload' ? '#fff' : 'transparent', color: mode === 'upload' ? 'var(--text)' : 'var(--text-2)', boxShadow: mode === 'upload' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+          >
+            Upload document
+          </button>
+        </div>
+
+        {mode === 'upload' && (
+          <div style={{ marginBottom: 12 }}>
+            <div className="section-label" style={{ marginBottom: 6 }}>Upload file (CSV, TXT, MD, JSON)</div>
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, border: '2px dashed var(--border-strong)', borderRadius: 8, background: uploadedFile ? '#ecfdf5' : '#f8fafc', cursor: 'pointer', gap: 10 }}>
+              <Icon name={uploadedFile ? 'FileCheck' : 'Upload'} size={16} color={uploadedFile ? '#10b981' : 'var(--text-2)'} />
+              <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
+                {uploadedFile ? (
+                  <><strong style={{ color: '#065f46' }}>{uploadedFile.name}</strong> <span style={{ color: 'var(--text-3)' }}>({(uploadedFile.size / 1024).toFixed(1)} KB)</span></>
+                ) : 'Click or drop a file here'}
+              </div>
+              <input type="file" accept=".csv,.txt,.md,.json,.xml,.html,.tsv,text/*" onChange={(e) => handleFile(e.target.files[0])} style={{ display: 'none' }} />
+            </label>
+          </div>
+        )}
+
+        <div style={{ marginBottom: 12 }}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Context (optional)</div>
+          <textarea
+            placeholder={mode === 'upload' ? 'File contents will appear here after upload. You can also paste additional context.' : 'Paste any relevant context: email thread, document text, notes, meeting summary, etc.'}
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            className="input"
+            style={{ minHeight: 80, resize: 'vertical', fontFamily: 'ui-monospace, monospace', fontSize: 11.5 }}
+          />
+          {context.length > 0 && (
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 4 }}>{context.length.toLocaleString()} characters</div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Instructions *</div>
+          <textarea
+            placeholder="e.g. Create tasks for collecting salary info for the 3 new hires, each with a 1-week deadline."
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            className="input"
+            style={{ minHeight: 60, resize: 'vertical' }}
+          />
+        </div>
+
+        {error && (
+          <div style={{ padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, fontSize: 11.5, color: '#991b1b', marginBottom: 10 }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          className="btn btn-primary"
+          onClick={generate}
+          disabled={loading || !instructions.trim()}
+          style={{ width: '100%', justifyContent: 'center', padding: '9px 14px', opacity: loading || !instructions.trim() ? 0.5 : 1 }}
+        >
+          {loading ? (
+            <>
+              <span style={{ width: 10, height: 10, border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+              <span>Generating...</span>
+            </>
+          ) : (
+            <>
+              <Icon name="Sparkles" size={12} color="#fff" />
+              <span>Generate tasks</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {proposals && (
+        <ProposalsReview
+          proposals={proposals}
+          selected={selectedProposals}
+          onToggle={toggleProposal}
+          onUpdate={updateProposal}
+          onCommit={commitProposals}
+          onDiscard={() => { setProposals(null); setSelectedProposals(new Set()); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProposalsReview({ proposals, selected, onToggle, onUpdate, onCommit, onDiscard }) {
+  return (
+    <div className="card" style={{ padding: 16, marginTop: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Proposed tasks</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{selected.size} of {proposals.length} selected. Review and commit.</div>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="btn btn-secondary" onClick={onDiscard}>Discard</button>
+          <button className="btn btn-primary" onClick={onCommit} disabled={selected.size === 0} style={{ opacity: selected.size === 0 ? 0.4 : 1 }}>
+            <Icon name="Check" size={12} color="#fff" />
+            <span>Commit {selected.size} to tracker</span>
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {proposals.map((p, idx) => {
+          const ws = get(p.workstream, WORKSTREAMS);
+          const owner = get(p.owner, PEOPLE);
+          const priority = get(p.priority, PRIORITIES);
+          const isSelected = selected.has(idx);
+          return (
+            <div
+              key={idx}
+              style={{ padding: 12, borderRadius: 7, border: `1.5px solid ${isSelected ? '#6366f1' : 'var(--border)'}`, background: isSelected ? '#eef2ff' : '#fff', display: 'flex', gap: 12 }}
+            >
+              <button onClick={() => onToggle(idx)} style={{ padding: 2, alignSelf: 'flex-start', marginTop: 2 }}>
+                {isSelected ? <Icon name="CheckSquare" size={16} color="#6366f1" /> : <Icon name="Square" size={16} color="#cbd5e1" />}
+              </button>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <input
+                  value={p.title}
+                  onChange={(e) => onUpdate(idx, { title: e.target.value })}
+                  style={{ fontSize: 13, fontWeight: 600, border: 'none', background: 'transparent', padding: 0, width: '100%' }}
+                />
+                {p.notes && (
+                  <div style={{ fontSize: 11.5, color: 'var(--text-2)', lineHeight: 1.5 }}>{p.notes}</div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                  <select value={p.workstream} onChange={(e) => onUpdate(idx, { workstream: e.target.value })} style={{ padding: '4px 6px', fontSize: 11, border: '1px solid var(--border)', borderRadius: 4, background: '#fff' }}>
+                    {WORKSTREAMS.map(w => <option key={w.id} value={w.id}>{w.label}</option>)}
+                  </select>
+                  <select value={p.owner} onChange={(e) => onUpdate(idx, { owner: e.target.value })} style={{ padding: '4px 6px', fontSize: 11, border: '1px solid var(--border)', borderRadius: 4, background: '#fff' }}>
+                    {PEOPLE.map(p2 => <option key={p2.id} value={p2.id}>{p2.name}</option>)}
+                  </select>
+                  <select value={p.priority} onChange={(e) => onUpdate(idx, { priority: e.target.value })} style={{ padding: '4px 6px', fontSize: 11, border: '1px solid var(--border)', borderRadius: 4, background: '#fff' }}>
+                    {PRIORITIES.map(pr => <option key={pr.id} value={pr.id}>{pr.label}</option>)}
+                  </select>
+                  <input
+                    type="date"
+                    value={p.deadline}
+                    onChange={(e) => onUpdate(idx, { deadline: e.target.value })}
+                    style={{ padding: '4px 6px', fontSize: 11, border: '1px solid var(--border)', borderRadius: 4, background: '#fff' }}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ITEM DETAIL MODAL
+// ============================================================
+
+function ItemDetailModal({ item, allItems, events, onClose, onUpdate, onDelete, onOpenItem, onAddSubtask }) {
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notes, setNotes] = useState(item.notes || '');
+  const ws = get(item.workstream, WORKSTREAMS);
+  const status = get(item.status, STATUSES);
+  const score = criticalityScore(item);
+  const breakdown = criticalityBreakdown(item);
+
+  const children = allItems.filter(i => i.parent_id === item.id);
+  const parent = item.parent_id ? allItems.find(i => i.id === item.parent_id) : null;
+  const itemEvents = events.filter(e => e.item_id === item.id).slice(0, 6);
+
+  useEffect(() => { setNotes(item.notes || ''); }, [item.id]);
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 720, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        {/* Header */}
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--text-2)' }}>
+            {parent && (
+              <>
+                <button onClick={() => onOpenItem(parent)} className="row-hover" style={{ padding: '3px 7px', borderRadius: 4, fontSize: 12, color: 'var(--text-2)' }}>
+                  ↑ {parent.title}
+                </button>
+                <Icon name="ChevronRight" size={12} color="var(--text-3)" />
+              </>
+            )}
+            <span className="dot" style={{ backgroundColor: ws.color }} />
+            <span style={{ fontWeight: 500 }}>{ws.label}</span>
+            <ScoreBadge score={score} />
+          </div>
+          <button onClick={onClose} className="icon-btn"><Icon name="X" size={15} /></button>
+        </div>
+
+        <div style={{ overflow: 'auto', flex: 1 }}>
+          {/* Title */}
+          <div style={{ padding: '18px 24px 8px' }}>
+            <input
+              type="text"
+              value={item.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              style={{ width: '100%', fontSize: 18, fontWeight: 600, border: 'none', padding: '2px 0', background: 'transparent', color: 'var(--text)', letterSpacing: -0.2 }}
+            />
+          </div>
+
+          {/* Field grid */}
+          <div style={{ padding: '0 24px 16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              <DetailField icon="User" label="Owner">
+                <select value={item.owner} onChange={(e) => onUpdate({ owner: e.target.value })} className="input">
+                  {PEOPLE.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Store" label="Vendor (optional)">
+                <input type="text" value={item.vendor || ''} onChange={(e) => onUpdate({ vendor: e.target.value })} placeholder="External vendor..." className="input" />
+              </DetailField>
+              <DetailField icon="Tag" label="Status">
+                <select value={item.status} onChange={(e) => onUpdate({ status: e.target.value })} className="input">
+                  {STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Flag" label="Priority">
+                <select value={item.priority} onChange={(e) => onUpdate({ priority: e.target.value })} className="input">
+                  {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Calendar" label="Deadline">
+                <input type="date" value={item.deadline} onChange={(e) => onUpdate({ deadline: e.target.value })} className="input" />
+              </DetailField>
+              <DetailField icon="Layers" label="Workstream">
+                <select value={item.workstream} onChange={(e) => onUpdate({ workstream: e.target.value })} className="input">
+                  {WORKSTREAMS.map(w => <option key={w.id} value={w.id}>{w.label}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Wrench" label="Resource needed">
+                <select value={item.resource || ''} onChange={(e) => onUpdate({ resource: e.target.value })} className="input">
+                  <option value="">—</option>
+                  {RESOURCE_TYPES.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Hourglass" label="Effort estimate">
+                <select value={item.timeframe || ''} onChange={(e) => onUpdate({ timeframe: e.target.value })} className="input">
+                  <option value="">—</option>
+                  {TIMEFRAMES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                </select>
+              </DetailField>
+              <DetailField icon="Zap" label="Criticality">
+                <CriticalityEditor item={item} score={score} breakdown={breakdown} onUpdate={onUpdate} />
+              </DetailField>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div style={{ padding: '0 24px 16px' }}>
+            <div className="section-label" style={{ marginBottom: 6 }}>Notes</div>
+            {editingNotes ? (
+              <div>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="input" style={{ minHeight: 90, resize: 'vertical' }} autoFocus />
+                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                  <button className="btn btn-primary" onClick={() => { onUpdate({ notes }); setEditingNotes(false); }}>Save</button>
+                  <button className="btn btn-secondary" onClick={() => { setNotes(item.notes || ''); setEditingNotes(false); }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div onClick={() => setEditingNotes(true)} style={{ padding: 12, borderRadius: 6, background: 'var(--panel-alt)', fontSize: 12.5, color: 'var(--text)', cursor: 'text', minHeight: 40, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {item.notes || <span style={{ color: 'var(--text-3)' }}>Click to add notes...</span>}
+              </div>
+            )}
+          </div>
+
+          {/* Connected resources */}
+          <div style={{ padding: '0 24px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div className="section-label">Connected resources</div>
+              <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 11 }} onClick={() => {
+                const label = prompt('Resource label:');
+                if (!label) return;
+                const type = prompt('Type (gdrive, notion, slack, sheet, doc, external):', 'gdrive') || 'external';
+                const url = prompt('URL:', '#') || '#';
+                onUpdate({ links: [...(item.links || []), { type, label, url }] });
+              }}>
+                <Icon name="Plus" size={11} />
+                <span>Add link</span>
+              </button>
+            </div>
+            {(!item.links || item.links.length === 0) ? (
+              <div style={{ padding: 16, borderRadius: 6, background: 'var(--panel-alt)', fontSize: 12, color: 'var(--text-3)', textAlign: 'center' }}>No connected resources.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {(item.links || []).map((l, idx) => {
+                  const meta = LINK_TYPES[l.type] || LINK_TYPES.external;
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: '#fff' }}>
+                      <Icon name={meta.icon} size={13} color={meta.color} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 500 }}>{l.label}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{meta.label} • {l.url}</div>
+                      </div>
+                      <button className="icon-btn" onClick={() => onUpdate({ links: item.links.filter((_, i) => i !== idx) })}>
+                        <Icon name="Trash2" size={12} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Sub-tasks */}
+          <div style={{ padding: '0 24px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div className="section-label">Sub-tasks {children.length > 0 && <span className="mono" style={{ marginLeft: 6 }}>{children.filter(c => c.status === 'done').length}/{children.length}</span>}</div>
+              <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 11 }} onClick={onAddSubtask}>
+                <Icon name="Plus" size={11} />
+                <span>Add sub-task</span>
+              </button>
+            </div>
+            {children.length === 0 ? (
+              <div style={{ padding: 16, borderRadius: 6, background: 'var(--panel-alt)', fontSize: 12, color: 'var(--text-3)', textAlign: 'center' }}>No sub-tasks yet.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {children.map(child => {
+                  const cstatus = get(child.status, STATUSES);
+                  const cowner = get(child.owner, PEOPLE);
+                  const crisk = riskLevel(child);
+                  const riskColors = { overdue: '#dc2626', critical: '#ea580c', blocked: '#dc2626', warning: '#ca8a04', ok: '#64748b', done: '#10b981' };
+                  return (
+                    <div key={child.id} onClick={() => onOpenItem(child)} className="row-hover" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 5, cursor: 'pointer', fontSize: 12 }}>
+                      {child.status === 'done' ? <Icon name="CheckCircle2" size={13} color="#10b981" /> :
+                       child.status === 'blocked' ? <Icon name="AlertCircle" size={13} color="#dc2626" /> :
+                       child.status === 'in_progress' ? <Icon name="Clock" size={13} color="#3b82f6" /> :
+                       <Icon name="Circle" size={13} color="#cbd5e1" />}
+                      <span style={{ flex: 1, textDecoration: child.status === 'done' ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.title}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{cowner?.name}</span>
+                      <span className="mono" style={{ fontSize: 10, color: riskColors[crisk], fontWeight: 600, minWidth: 40, textAlign: 'right' }}>{child.status === 'done' ? '—' : formatDeadline(child.deadline)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Activity */}
+          {itemEvents.length > 0 && (
+            <div style={{ padding: '0 24px 20px' }}>
+              <div className="section-label" style={{ marginBottom: 8 }}>Activity</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {itemEvents.map(e => (
+                  <div key={e.id} style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--text-2)', padding: '4px 0' }}>
+                    <span style={{ fontWeight: 500, color: 'var(--text)' }}>{get(e.actor, PEOPLE)?.name || e.actor}</span>
+                    <span>{e.event_type === 'created' ? 'created this item' : `${e.event_type.replace('_', ' ')}: ${e.from || '—'} → ${e.to || '—'}`}</span>
+                    <span className="mono" style={{ marginLeft: 'auto', color: 'var(--text-3)' }}>{new Date(e.timestamp).toLocaleDateString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
+          <button className="btn btn-danger" onClick={() => { if (window.confirm('Delete this item and its sub-tasks?')) onDelete(); }}>
+            <Icon name="Trash2" size={12} />
+            <span>Delete</span>
+          </button>
+          <div className="mono" style={{ fontSize: 10, color: 'var(--text-3)', alignSelf: 'center' }}>{item.id}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailField({ icon, label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        <Icon name={icon} size={11} />
+        <span>{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function CriticalityEditor({ item, score, breakdown, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(score);
+  const hasOverride = typeof item.criticality_override === 'number';
+
+  useEffect(() => { setValue(score); }, [score]);
+
+  const commit = () => {
+    const v = Math.max(1, Math.min(10, Math.round(Number(value) || 1)));
+    onUpdate({ criticality_override: v });
+    setEditing(false);
+  };
+
+  const clearOverride = () => {
+    onUpdate({ criticality_override: null });
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <input
+          type="number"
+          min="1" max="10"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false); }}
+          autoFocus
+          style={{ width: 50, padding: '4px 6px', fontSize: 13, fontWeight: 600, border: '1.5px solid #6366f1', borderRadius: 5, textAlign: 'center' }}
+          className="mono"
+        />
+        <button className="btn btn-primary" style={{ padding: '4px 8px', fontSize: 11 }} onClick={commit}>Set</button>
+        {hasOverride && <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 11 }} onClick={clearOverride}>Clear</button>}
+        <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 11 }} onClick={() => setEditing(false)}>Cancel</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', cursor: 'pointer' }} onClick={() => setEditing(true)} title="Click to override">
+      <ScoreBadge score={score} />
+      <div style={{ fontSize: 10, color: 'var(--text-3)', flex: 1 }}>
+        {hasOverride ? (
+          <span style={{ color: '#6366f1', fontWeight: 500 }}>Manual override · click to edit</span>
+        ) : (
+          breakdown.parts.map(p => `${p.label} +${p.value}`).join(' · ')
+        )}
+      </div>
+      <Icon name="Pencil" size={11} color="var(--text-3)" />
+    </div>
+  );
+}
+
+// ============================================================
+// ADD ITEM MODAL
+// ============================================================
+
+function AddItemModal({ parentId, allItems, onClose, onAdd }) {
+  const parent = parentId ? allItems.find(i => i.id === parentId) : null;
+  const [form, setForm] = useState({
+    title: '',
+    workstream: parent?.workstream || 'people',
+    parent_id: parentId || null,
+    owner: parent?.owner || 'head_ops',
+    vendor: '',
+    deadline: daysFromNow(14),
+    status: 'not_started',
+    priority: 'p2',
+    resource: 'time',
+    timeframe: '1w',
+    notes: '',
+    links: [],
+    tags: [],
+  });
+
+  const canSubmit = form.title.trim().length > 0;
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 620, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{parent ? `New sub-task under "${parent.title}"` : 'New item'}</div>
+          <button onClick={onClose} className="icon-btn"><Icon name="X" size={15} /></button>
+        </div>
+
+        <div style={{ padding: 20, overflow: 'auto' }}>
+          <input
+            type="text" placeholder="What needs to get done?" value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            style={{ width: '100%', fontSize: 17, fontWeight: 600, border: 'none', padding: '3px 0', marginBottom: 18, background: 'transparent' }}
+            autoFocus
+          />
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+            <DetailField icon="Layers" label="Workstream">
+              <select value={form.workstream} onChange={(e) => setForm({ ...form, workstream: e.target.value })} className="input">
+                {WORKSTREAMS.map(w => <option key={w.id} value={w.id}>{w.label}</option>)}
+              </select>
+            </DetailField>
+            <DetailField icon="User" label="Owner">
+              <select value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="input">
+                {PEOPLE.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </DetailField>
+            <DetailField icon="Flag" label="Priority">
+              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="input">
+                {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+              </select>
+            </DetailField>
+            <DetailField icon="Calendar" label="Deadline">
+              <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className="input" />
+            </DetailField>
+            <DetailField icon="Wrench" label="Resource needed">
+              <select value={form.resource} onChange={(e) => setForm({ ...form, resource: e.target.value })} className="input">
+                {RESOURCE_TYPES.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+              </select>
+            </DetailField>
+            <DetailField icon="Hourglass" label="Effort estimate">
+              <select value={form.timeframe} onChange={(e) => setForm({ ...form, timeframe: e.target.value })} className="input">
+                {TIMEFRAMES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            </DetailField>
+          </div>
+
+          <DetailField icon="FileText" label="Notes">
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input" style={{ minHeight: 70, resize: 'vertical' }} placeholder="Context, links, next steps..." />
+          </DetailField>
+        </div>
+
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={!canSubmit} style={{ opacity: canSubmit ? 1 : 0.4, cursor: canSubmit ? 'pointer' : 'not-allowed' }} onClick={() => canSubmit && onAdd(form)}>
+            Create {parent ? 'sub-task' : 'item'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SETTINGS MODAL (API key)
+// ============================================================
+
+function SettingsModal({ onClose, onRefresh }) {
+  const [tab, setTab] = useState('api');
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 680, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>Settings</div>
+          <button onClick={onClose} className="icon-btn"><Icon name="X" size={15} /></button>
+        </div>
+
+        {/* Tab strip */}
+        <div style={{ display: 'flex', gap: 2, padding: '8px 20px 0', borderBottom: '1px solid var(--border)' }}>
+          {[
+            { id: 'api', label: 'API key' },
+            { id: 'workstreams', label: 'Workstreams' },
+            { id: 'resources', label: 'Resource types' },
+            { id: 'timeframes', label: 'Effort estimates' },
+            { id: 'criticality', label: 'Criticality' },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                padding: '8px 12px', fontSize: 12, fontWeight: 500,
+                color: tab === t.id ? 'var(--text)' : 'var(--text-2)',
+                borderBottom: tab === t.id ? '2px solid var(--text)' : '2px solid transparent',
+                marginBottom: -1,
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ overflow: 'auto', flex: 1 }}>
+          {tab === 'api' && <APIKeySettings />}
+          {tab === 'workstreams' && <WorkstreamSettings onChange={onRefresh} />}
+          {tab === 'resources' && <ResourceTypeSettings onChange={onRefresh} />}
+          {tab === 'timeframes' && <TimeframeSettings onChange={onRefresh} />}
+          {tab === 'criticality' && <CriticalitySettings />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function APIKeySettings() {
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY_API) || '');
+  const [saved, setSaved] = useState(false);
+
+  const save = () => {
+    localStorage.setItem(STORAGE_KEY_API, apiKey);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>API key</div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 12, lineHeight: 1.6 }}>
+        The "Ask the tracker" and intake features use an LLM API. Paste your API key below to enable them. The key is stored in your browser's local storage and never sent anywhere except the API endpoint when a query is made.
+      </div>
+      <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Paste API key..." className="input mono" style={{ fontSize: 12 }} />
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button className="btn btn-primary" onClick={save}>{saved ? 'Saved' : 'Save'}</button>
+        {apiKey && (
+          <button className="btn btn-secondary" onClick={() => { localStorage.removeItem(STORAGE_KEY_API); setApiKey(''); }}>Clear</button>
+        )}
+      </div>
+      <div style={{ marginTop: 20, padding: 12, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 7, fontSize: 11.5, color: '#713f12', lineHeight: 1.6 }}>
+        <strong>Demo note:</strong> In production, API calls would route through a backend service so keys are never exposed client-side. See the deployment documentation for secure setup.
+      </div>
+    </div>
+  );
+}
+
+function WorkstreamSettings({ onChange }) {
+  const [list, setList] = useState(WORKSTREAMS);
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({ label: '', color: '#64748b', description: '' });
+
+  const commit = (newList) => {
+    setList(newList);
+    persistWS(newList);
+    if (onChange) onChange();
+  };
+
+  const startEdit = (ws) => {
+    setEditingId(ws.id);
+    setDraft({ label: ws.label, color: ws.color, description: ws.description || '' });
+  };
+
+  const saveEdit = () => {
+    commit(list.map(w => w.id === editingId ? { ...w, ...draft } : w));
+    setEditingId(null);
+  };
+
+  const remove = (id) => {
+    if (window.confirm('Remove this workstream? Items assigned to it will remain but lose their workstream.')) {
+      commit(list.filter(w => w.id !== id));
+    }
+  };
+
+  const add = () => {
+    const id = `ws_${Date.now()}`;
+    commit([...list, { id, label: 'New workstream', color: '#64748b', icon: 'Circle', description: '' }]);
+    startEdit({ id, label: 'New workstream', color: '#64748b', description: '' });
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>Workstreams</div>
+        <button className="btn btn-secondary" style={{ padding: '5px 10px', fontSize: 11.5 }} onClick={add}>
+          <Icon name="Plus" size={11} />
+          <span>Add</span>
+        </button>
+      </div>
+      <div style={{ fontSize: 11.5, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.55 }}>
+        Workstreams are the operational domains items are categorized by. They appear in the sidebar and drive per-domain views.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {list.map(ws => (
+          editingId === ws.id ? (
+            <div key={ws.id} style={{ padding: 12, border: '1.5px solid #6366f1', borderRadius: 7, background: '#eef2ff' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={draft.label} onChange={(e) => setDraft({ ...draft, label: e.target.value })} className="input" placeholder="Label" style={{ flex: 1 }} />
+                <input type="color" value={draft.color} onChange={(e) => setDraft({ ...draft, color: e.target.value })} style={{ width: 36, height: 32, border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer' }} />
+              </div>
+              <textarea value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} className="input" placeholder="Description" style={{ minHeight: 50, marginBottom: 8 }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-primary" onClick={saveEdit}>Save</button>
+                <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div key={ws.id} style={{ padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span className="dot" style={{ backgroundColor: ws.color, width: 10, height: 10 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{ws.label}</div>
+                {ws.description && <div style={{ fontSize: 10.5, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ws.description}</div>}
+              </div>
+              <button className="icon-btn" onClick={() => startEdit(ws)}><Icon name="Pencil" size={12} /></button>
+              <button className="icon-btn" onClick={() => remove(ws.id)}><Icon name="Trash2" size={12} /></button>
+            </div>
+          )
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ResourceTypeSettings({ onChange }) {
+  const [list, setList] = useState(RESOURCE_TYPES);
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({ label: '', icon: 'Circle' });
+
+  const commit = (newList) => { setList(newList); persistRT(newList); if (onChange) onChange(); };
+  const startEdit = (r) => { setEditingId(r.id); setDraft({ label: r.label, icon: r.icon || 'Circle' }); };
+  const saveEdit = () => { commit(list.map(r => r.id === editingId ? { ...r, ...draft } : r)); setEditingId(null); };
+  const remove = (id) => { if (window.confirm('Remove this resource type?')) commit(list.filter(r => r.id !== id)); };
+  const add = () => {
+    const id = `rt_${Date.now()}`;
+    commit([...list, { id, label: 'New resource', icon: 'Circle' }]);
+    startEdit({ id, label: 'New resource', icon: 'Circle' });
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>Resource types</div>
+        <button className="btn btn-secondary" style={{ padding: '5px 10px', fontSize: 11.5 }} onClick={add}>
+          <Icon name="Plus" size={11} />
+          <span>Add</span>
+        </button>
+      </div>
+      <div style={{ fontSize: 11.5, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.55 }}>
+        Resource types describe what's needed to unblock or execute an item. Each item can be tagged with one resource type.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {list.map(r => (
+          editingId === r.id ? (
+            <div key={r.id} style={{ padding: 12, border: '1.5px solid #6366f1', borderRadius: 7, background: '#eef2ff' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={draft.label} onChange={(e) => setDraft({ ...draft, label: e.target.value })} className="input" placeholder="Label" style={{ flex: 1 }} />
+                <input value={draft.icon} onChange={(e) => setDraft({ ...draft, icon: e.target.value })} className="input" placeholder="Icon (e.g. DollarSign)" style={{ width: 160 }} />
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-primary" onClick={saveEdit}>Save</button>
+                <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div key={r.id} style={{ padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Icon name={r.icon || 'Circle'} size={14} color="var(--text-2)" />
+              <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{r.label}</div>
+              <button className="icon-btn" onClick={() => startEdit(r)}><Icon name="Pencil" size={12} /></button>
+              <button className="icon-btn" onClick={() => remove(r.id)}><Icon name="Trash2" size={12} /></button>
+            </div>
+          )
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimeframeSettings({ onChange }) {
+  const [list, setList] = useState(TIMEFRAMES);
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({ label: '', days: 1 });
+
+  const commit = (newList) => { setList(newList); persistTF(newList); if (onChange) onChange(); };
+  const startEdit = (t) => { setEditingId(t.id); setDraft({ label: t.label, days: t.days }); };
+  const saveEdit = () => { commit(list.map(t => t.id === editingId ? { ...t, ...draft, days: Number(draft.days) } : t)); setEditingId(null); };
+  const remove = (id) => { if (window.confirm('Remove this timeframe?')) commit(list.filter(t => t.id !== id)); };
+  const add = () => {
+    const id = `tf_${Date.now()}`;
+    commit([...list, { id, label: '1 week', days: 7 }]);
+    startEdit({ id, label: '1 week', days: 7 });
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>Effort estimates</div>
+        <button className="btn btn-secondary" style={{ padding: '5px 10px', fontSize: 11.5 }} onClick={add}>
+          <Icon name="Plus" size={11} />
+          <span>Add</span>
+        </button>
+      </div>
+      <div style={{ fontSize: 11.5, color: 'var(--text-2)', marginBottom: 14, lineHeight: 1.55 }}>
+        Effort estimates capture how long an item takes to actually do (separate from its deadline). Used for resource planning.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {list.map(t => (
+          editingId === t.id ? (
+            <div key={t.id} style={{ padding: 12, border: '1.5px solid #6366f1', borderRadius: 7, background: '#eef2ff' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={draft.label} onChange={(e) => setDraft({ ...draft, label: e.target.value })} className="input" placeholder="Label (e.g. 1 week)" style={{ flex: 1 }} />
+                <input type="number" step="0.25" value={draft.days} onChange={(e) => setDraft({ ...draft, days: e.target.value })} className="input" placeholder="Days" style={{ width: 100 }} />
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-primary" onClick={saveEdit}>Save</button>
+                <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div key={t.id} style={{ padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{t.label}</div>
+              <div className="mono" style={{ fontSize: 11, color: 'var(--text-3)' }}>{t.days} day{t.days !== 1 ? 's' : ''}</div>
+              <button className="icon-btn" onClick={() => startEdit(t)}><Icon name="Pencil" size={12} /></button>
+              <button className="icon-btn" onClick={() => remove(t.id)}><Icon name="Trash2" size={12} /></button>
+            </div>
+          )
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CriticalitySettings() {
+  return (
+    <div style={{ padding: 20 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Criticality scoring</div>
+      <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 16, lineHeight: 1.6 }}>
+        Each item receives a criticality score from 1 to 10, driving ranking on the Overview page's "Where to dedicate resources next." The score is computed from priority, deadline urgency, and blocked status. You can override it manually for any item from its detail view.
+      </div>
+
+      <div className="card" style={{ padding: 16, background: 'var(--panel-alt)', marginBottom: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Formula</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
+          <FormulaRow label="Base priority weight" items={[
+            { k: 'P0', v: '+8' }, { k: 'P1', v: '+6' }, { k: 'P2', v: '+4' }, { k: 'P3', v: '+2' },
+          ]} />
+          <FormulaRow label="Urgency modifier" items={[
+            { k: 'Overdue', v: '+3' }, { k: 'Due ≤ 7 days', v: '+2' }, { k: 'Due ≤ 21 days', v: '+1' },
+          ]} />
+          <FormulaRow label="Status modifier" items={[
+            { k: 'Blocked', v: '+1' }, { k: 'Done', v: '= 0' },
+          ]} />
+          <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 11.5, color: 'var(--text-2)' }}>
+            Final score is clamped to the range 1-10. Manual overrides bypass this formula.
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: 14 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Example scores</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11.5, color: 'var(--text-2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ScoreBadge score={10} /><span>P0 item overdue by any amount</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ScoreBadge score={8} /><span>P1 item due within 7 days, in progress</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ScoreBadge score={5} /><span>P2 item due within 21 days</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ScoreBadge score={2} /><span>P3 item with no urgency</span></div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, padding: 12, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 7, fontSize: 11.5, color: '#1e40af', lineHeight: 1.6 }}>
+        <strong>Note:</strong> The formula is currently hardcoded. A production version would expose these weights for editing and support custom scoring rules per workstream.
+      </div>
+    </div>
+  );
+}
+
+function FormulaRow({ label, items }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>{label}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {items.map((it, i) => (
+          <span key={i} style={{ padding: '3px 8px', background: '#fff', border: '1px solid var(--border)', borderRadius: 4, fontSize: 11 }}>
+            <span style={{ color: 'var(--text-2)' }}>{it.k}</span> <span className="mono" style={{ fontWeight: 600 }}>{it.v}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CHAT PANEL
+// ============================================================
+
+function ChatPanel({ items, events, onClose }) {
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: "I have full context on every item, event, and relationship in your tracker. Ask me what's at risk, where to focus, bottlenecks, ownership patterns, or anything else about your operational state." }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [apiKey] = useState(() => localStorage.getItem(STORAGE_KEY_API) || '');
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, loading]);
+
+  const suggestions = [
+    "What's at risk this week?",
+    "Summarize EIR program readiness",
+    "Where is ownership over-concentrated?",
+    "What should I tackle first?",
+  ];
+
+  const buildSystem = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const itemsCtx = items.map(i => ({
+      id: i.id,
+      title: i.title,
+      parent_id: i.parent_id,
+      workstream: get(i.workstream, WORKSTREAMS)?.label,
+      owner: get(i.owner, PEOPLE)?.name,
+      vendor: i.vendor || null,
+      deadline: i.deadline,
+      days_until: daysBetween(i.deadline),
+      status: get(i.status, STATUSES)?.label,
+      priority: get(i.priority, PRIORITIES)?.label,
+      resource_needed: get(i.resource, RESOURCE_TYPES)?.label,
+      effort_estimate: get(i.timeframe, TIMEFRAMES)?.label,
+      criticality_score: criticalityScore(i),
+      risk_level: riskLevel(i),
+      notes: i.notes,
+      links_count: (i.links || []).length,
+      tags: i.tags || [],
+    }));
+    const recentEvents = events.slice(0, 15).map(e => ({
+      item: items.find(i => i.id === e.item_id)?.title,
+      actor: get(e.actor, PEOPLE)?.name,
+      event: e.event_type,
+      from: e.from, to: e.to,
+      when: new Date(e.timestamp).toISOString().slice(0, 10),
+    }));
+
+    return `You are an operations assistant embedded in BlueDot Impact's Ops Operations Center. BlueDot is a nonprofit building the AI safety and biosecurity workforce. They are 8 people growing to 25+ in 12 months, with an EIR program launching mid-2026. The user is the Head of Operations.
+
+Today: ${today}
+People: ${PEOPLE.map(p => `${p.name} (${p.role})`).join(', ')}
+
+Full tracker state (${items.length} items):
+${JSON.stringify(itemsCtx, null, 2)}
+
+Recent events (${recentEvents.length}):
+${JSON.stringify(recentEvents, null, 2)}
+
+When answering:
+- Be direct and specific. Reference actual items by title.
+- Prioritize by criticality_score and risk_level.
+- Surface patterns (ownership bottlenecks, workstream concentration, dependencies).
+- Keep answers tight. Short paragraphs or compact bullets.
+- Plain formatting. No em-dashes. No markdown headers.
+- If the tracker can't answer, say so briefly.`;
+  };
+
+  const send = async (text) => {
+    const q = (text ?? input).trim();
+    if (!q || loading) return;
+    if (!apiKey) {
+      setMessages(prev => [...prev, { role: 'user', content: q }, { role: 'assistant', content: "No API key set. Click Settings in the sidebar to add your Anthropic API key and enable this feature." }]);
+      setInput('');
+      return;
+    }
+
+    const newMessages = [...messages, { role: 'user', content: q }];
+    setMessages(newMessages);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const convo = newMessages.map(m => ({ role: m.role, content: m.content }));
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1200,
+          system: buildSystem(),
+          messages: convo,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        setMessages([...newMessages, { role: 'assistant', content: `API error: ${data.error.message || 'unknown'}. Check your key in Settings.` }]);
+      } else {
+        const reply = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || 'No response.';
+        setMessages([...newMessages, { role: 'assistant', content: reply }]);
+      }
+    } catch (e) {
+      setMessages([...newMessages, { role: 'assistant', content: `Network error: ${e.message}. Check your connection.` }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', justifyContent: 'flex-end', zIndex: 100 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', boxShadow: '-20px 0 60px rgba(0,0,0,0.15)' }}>
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="Sparkles" size={14} color="#fff" />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Ask the tracker</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>Grounded in {items.length} items, {events.length} events</div>
+            </div>
+          </div>
+          <button onClick={onClose} className="icon-btn"><Icon name="X" size={15} /></button>
+        </div>
+
+        <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+              <div style={{ maxWidth: '86%', padding: '10px 13px', borderRadius: 10, fontSize: 13, whiteSpace: 'pre-wrap', lineHeight: 1.55, background: m.role === 'user' ? '#0f172a' : '#f8fafc', color: m.role === 'user' ? '#fff' : 'var(--text)', border: m.role === 'user' ? 'none' : '1px solid var(--border)' }}>
+                {m.content}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', gap: 4, padding: '12px 14px', background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 10 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#94a3b8', animation: 'pulse 1.2s infinite' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#94a3b8', animation: 'pulse 1.2s infinite', animationDelay: '0.15s' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#94a3b8', animation: 'pulse 1.2s infinite', animationDelay: '0.3s' }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {messages.length === 1 && (
+          <div style={{ padding: '0 18px 10px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {suggestions.map(s => (
+              <button key={s} onClick={() => send(s)} style={{ padding: '6px 10px', background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 14, fontSize: 11.5, color: 'var(--text-2)' }} className="row-hover">{s}</button>
+            ))}
+          </div>
+        )}
+
+        <div style={{ padding: '12px 18px 18px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
+          <input
+            type="text" value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            placeholder={apiKey ? "Ask anything about your ops state..." : "Add API key in Settings to enable..."}
+            className="input" style={{ fontSize: 13 }}
+            disabled={loading}
+          />
+          <button onClick={() => send()} disabled={!input.trim() || loading} style={{ width: 36, height: 36, border: 'none', borderRadius: 8, background: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: input.trim() && !loading ? 1 : 0.4, cursor: input.trim() && !loading ? 'pointer' : 'not-allowed' }}>
+            <Icon name="Send" size={13} color="#fff" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
